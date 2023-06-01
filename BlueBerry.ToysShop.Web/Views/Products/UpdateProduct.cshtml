@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Update";
+}
+@model ProductUpdateViewModel
+
+<h1>Ürün Güncelleme</h1>
+
+<form asp-controller="Products" asp-action="updateproduct" method="post" enctype="multipart/form-data">
+
+
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ImagePath" />
+
+    <div>
+        <img style="width:100px; height:100px;" src="@(String.IsNullOrEmpty(Model.ImagePath) ? "/images/noimage.jpg" : "/images/"+Model.ImagePath )" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label">Ürün ismi :</label>
+        <input class="form-control" asp-for="Name">
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label">Ürün fiyat :</label>
+        <input class="form-control" asp-for="Price">
+    </div>
+    <div class="mb-3">
+        <label>Marka:</label>
+        <select class="form-select" asp-for="Brand" asp-items="@ViewBag.BrandSelect">
+            <option value="">Marka seçiniz</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Quantity" class="form-label">Ürün stok :</label>
+        <input type="" class="form-control" asp-for="Quantity">
+    </div>
+    <div class="mb-3">
+        <span>Ürün kaç ay satışta kalacak ?</span>
+        @foreach (var item in ViewBag.ExpireSelect)
+        {
+            <div class="form-check">
+                <input checked=@(item.Value==ViewBag.ExpireValue ? true : false) class="form-check-input" type="radio" id="@(item.Value)Expire" name="Expire" value="@item.Value">
+                <label class="form-check-label" for="@(item.Value)Expire">
+                    @item.Key
+                </label>
+            </div>
+        }
+    </div>
+    <div class="form-floating mb-3">
+        <textarea asp-for="Description" class="form-control" placeholder="ürün açıklama" style="height: 100px"></textarea>
+        <label asp-for="Description">ürün açıklama</label>
+    </div>
+    <div class="mb-3">
+        <label asp-for="PublishDate" class="form-label">Ürün yayınlanma tarih :</label>
+
+        <input class="form-control" asp-for="PublishDate">
+        <span class="text-danger" asp-validation-for="PublishDate"></span>
+    </div>
+    <div class="mb-3">
+        <select class="form-select" asp-for="CategoryId" asp-items="@ViewBag.categorySelect">
+            <option value="">Kategori seçiniz</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="formFileLg" class="form-label">Ürün Resim</label>
+        <input class="form-control form-control-lg" asp-for="Image" type="file">
+    </div>
+    <button class="btn btn-primary" type="submit">Ürün Güncelle</button>
+</form>
+
+
+@section Scripts
+{
+
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+}
+

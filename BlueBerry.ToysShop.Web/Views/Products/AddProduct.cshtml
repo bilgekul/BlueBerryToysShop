@@ -1,0 +1,60 @@
+﻿@model ProductViewModel
+@{
+    ViewData["Title"] = "AddProduct";
+}
+<h1>Ürün Ekleme</h1>
+<div class="col-md-6">
+    <form asp-controller="Products" asp-action="AddProduct" method="post" enctype="multipart/form-data">
+        <div class="form-group mb-3">
+            <label>Name:</label>
+            <input type="text" asp-for="Name" />
+        </div>
+        <div class="form-group mb-3">
+            <label>Price:</label>
+            <input type="text" asp-for="Price" />
+        </div>
+        <div class="mb-3">
+            <label>Marka:</label>
+            <select class="form-select" asp-for="Brand" asp-items="@ViewBag.BrandSelect">
+                <option value="">Marka seçiniz</option>
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            <label>Quantity:</label>
+            <input type="number" asp-for="Quantity" />
+        </div>
+        <div class="form-group mb-3">
+            <span>Ürün kaç ay satışta kalacak ?</span>
+            @foreach (var item in ViewBag.ExpireSelect)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="@(item.Value)Expire" name="Expire" value="@item.Value">
+                    <label class="form-check-label" for="@(item.Value)Expire">
+                        @item.Key
+                    </label>
+                </div>
+            }
+        </div>
+        <div class="form-floating mb-3">
+            <textarea asp-for="Description" class="form-control" placeholder="ürün açıklama" style="height: 100px"></textarea>
+            <label asp-for="Description">ürün açıklama</label>
+            <span class="text-danger" asp-validation-for="Description"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="PublishDate" class="form-label">Ürün yayınlanma tarih :</label>
+
+            <input class="form-control" asp-for="PublishDate">
+            <span class="text-danger" asp-validation-for="PublishDate"></span>
+        </div>
+        <div class="mb-3">
+            <select class="form-select" asp-for="CategoryId" asp-items="@ViewBag.categorySelect">
+                <option value="">Kategori seçiniz</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="formFileLg" class="form-label">Ürün Resim</label>
+            <input class="form-control form-control-lg" asp-for="Image" type="file">
+        </div>
+        <button class="btn btn-primary" type="submit">Ürün Kaydet</button>
+    </form>
+</div>

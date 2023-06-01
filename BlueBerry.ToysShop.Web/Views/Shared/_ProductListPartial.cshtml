@@ -1,0 +1,32 @@
+﻿@model List<ProductViewModel>
+
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var item in Model)
+    {
+    <div class="card" style="width: 18rem;">
+        @if (!String.IsNullOrEmpty(item.ImagePath))
+        {
+            <img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
+        }
+        else
+        {
+            <img class="card-img-top" src="/images/not-found-image.jpg" />
+        }
+        <div class="card-body">
+            <h5 class="card-title">@item.Name</h5>
+            <p class="card-text">@item.Description</p>
+            <a class="btn btn-primary" asp-controller="products" asp-action="_detailsproductpartial" asp-route-productid="@item.Id">Detaylar</a>
+			<a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-id="@item.Id">Güncelle</a>
+            <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-id="@item.Id">Sil</a>
+            
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>No products found.</p>
+}
+
