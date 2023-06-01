@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "DisplayProduct";
+}
+
+@{
+    Dictionary<string, string> brandSelect = ViewBag.BrandSelect as Dictionary<string, string>;
+}
+
+@model List<ProductViewModel>
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#listeleButton").click(function () {
+                var productName = $("#product-search").val();
+                var minPrice = $("#rangeInput").val();
+                var brands = [];
+                $("input[name='brands']:checked").each(function () {
+                    brands.push($(this).val());
+                });
+                var categories = [];
+                $("input[name='categories']:checked").each(function () {
+                    categories.push($(this).val());
+                });
+
+                $.ajax({
+                    url: '@Url.Action("DisplayProduct", "Products")',
+                    type: 'POST',
+                    data: {
+                        productName: productName,
+                        minPrice: minPrice,
+                        brands: brands,
+                        categories: categories
+                    },
+                    success: function (result) {
+                        $("#productListContainer").html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+}
+<h1>DisplayProduct</h1>
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <form class="d-flex" id="productSearchForm">
+                <label for="product-search">Ürün Adı:</label>
+                <input class="form-control me-2" type="search" id="product-search" placeholder="Arama yap..." aria-label="Search">
+            </form>
+            <div class="mb-3 d-flex">
+                <label for="rangeInput">Fiyat:</label>
+                <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="rangeInput">
+            </div>
+            <div class="mb-3 d-flex">
+                <label for="brands">Markalar:</label>
+                @foreach (var brand in brandSelect)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="@brand.Key" name="brands" value="@brand.Key">
+                        <label class="form-check-label" for="@brand.Key">@brand.Value</label>
+                    </div>
+                }
+            </div>
+            <div class="mb-3 d-flex">
+                <label for="categories">Kategoriler:</label>
+                @foreach (var category in ViewBag.CategorySelect)
+                {
+                    <div>
+                        <input type="checkbox" id="@("category_" + category.Key)" name="categories" value="@category.Key">
+                        <label for="@("category_" + category.Key)">@category.Value</label>
+                    </div>
+                }
+            </div>
+            <div class="mb-3 d-flex">
+                <label>Adet:</label>
+                <span>Adet en az</span>
+                <input type="radio" />
+                <span>Adet en çok</span>
+                <input type="radio" />
+            </div>
+            <div class="mb-3 d-flex">
+                <button type="button" class="btn btn-primary" id="listeleButton">Listele</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    @if (Model != null && Model.Any())
+    {
+        <div id="productListContainer">
+            @Html.Partial("_ProductListPartial", Model)
+        </div>
+    }
+    else
+    {
+        @if (Model != null && Model.Any())
+        {
+            <div id="productListContainer">
+                @foreach (var item in Model)
+                {
+                    <div class="card" style="width: 18rem;">
+                        @if (!String.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
+                        }
+                        else
+                        {
+                            <img class="card-img-top" src="/images/not-found-image.jpg" />
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Description</p>
+                            <a class="btn btn-primary" asp-controller="products" asp-action="_detailsproductpartial" asp-route-productid="@item.Id">Detaylar</a>
+                            <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                            <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>No products found.</p>
+        }
+    }
+</div>
+
+
