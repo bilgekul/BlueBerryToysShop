@@ -2,6 +2,5 @@
 {
     public class Customer:User
     {
-		public DateTime LastLogin { get; set; }
-	}
+    }
 }

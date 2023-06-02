@@ -18,11 +18,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 		private readonly WebDbContext _context;
         private readonly IMapper _mapper;
-        public CustomersController(WebDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            
         }
         [HttpGet]
         public IActionResult SignUp()
@@ -42,12 +40,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
         {
             return View();
         }
-		[HttpPost]
-		public async Task<IActionResult> Login(CustomerViewModel customer)
-		{
-			var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customer.Email);
-			if (existingCustomer != null && existingCustomer.Password == customer.Password)
-			{
+        [HttpPost]
+        {
+            {
 				var claims = new List<Claim>
 				{
 					new Claim(ClaimTypes.Name, existingCustomer.Email),
@@ -58,20 +53,16 @@ namespace BlueBerry.ToysShop.Web.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-				return RedirectToAction("Index", "Home");
-			}
-			else
-			{
-				ModelState.AddModelError(string.Empty, "Invalid email or password.");
-				return View(customer);
-			}
-		}
-		[HttpGet]
-		public async Task<IActionResult> Logout()
-		{
-			await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-			return RedirectToAction("Index", "Home");
-		}
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            }
+        }
+        [HttpGet]
+        {
+        }
 		[HttpGet]
 		[Authorize(Roles = "Customer")]
 		public IActionResult CustomerProfile()
@@ -85,8 +76,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
 			// Map the customer to the view model
 			var customerViewModel = _mapper.Map<CustomerViewModel>(customer);
 
-			return View(customerViewModel);
-		}
+        }
+
         [HttpPost]
         public IActionResult addToCart()
         {
