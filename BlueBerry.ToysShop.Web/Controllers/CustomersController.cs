@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
@@ -18,11 +19,16 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 		private readonly WebDbContext _context;
         private readonly IMapper _mapper;
-        
-         public CustomersController(WebDbContext context, IMapper mapper)
+        private readonly UserManager<Customer> _userManager;
+        private readonly SignInManager<Customer> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public CustomersController(WebDbContext context, IMapper mapper, UserManager<Customer> userManager, SignInManager<Customer> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _mapper = mapper;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _roleManager = roleManager;
         }
         [Authorize(Roles = "Customer")]
         [HttpGet]
@@ -32,12 +38,46 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public IActionResult SignUp(CustomerViewModel customer, [FromForm] string First, [FromForm] string Last)
+        public async Task<IActionResult> SignUp(CustomerViewModel customer, [FromForm] string First, [FromForm] string Last)
         {
             customer.FullName = First + "-" + Last;
-            _context.Customers.Add(_mapper.Map<Customer>(customer));
-            _context.SaveChanges();
-            return RedirectToAction("Login");
+            if (ModelState.IsValid)
+            {   
+                var _customer = _mapper.Map<Customer>(customer);
+                _context.Customers.Add(_customer);
+                _context.SaveChanges();
+                var existingCustomer = await _userManager.FindByEmailAsync(customer.Email);
+
+                if (existingCustomer == null)
+                {
+                    var newCustomer = _mapper.Map<Customer>(customer);
+                    newCustomer.Email = customer.Email;
+
+                    var result = await _userManager.CreateAsync(newCustomer, customer.Password);
+
+                    if (result.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(newCustomer, "Customer");
+                        
+                        await _signInManager.SignInAsync(newCustomer, isPersistent: false);
+
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "A customer with the provided email already exists.");
+                }
+            }
+
+            return View(customer);
         }
 		[Authorize(Roles = "Customer")]
 		[HttpGet]
@@ -49,49 +89,92 @@ namespace BlueBerry.ToysShop.Web.Controllers
 		[HttpPost]
         public async Task<IActionResult> Login(CustomerViewModel customer)
         {
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customer.Email);
-            if (existingCustomer != null && existingCustomer.Password == customer.Password)
+            if (ModelState.IsValid)
             {
-                var claims = new List<Claim>
+                var result = await _signInManager.PasswordSignInAsync(customer.Email, customer.Password, isPersistent: false, lockoutOnFailure: false);
+
+                if (result.Succeeded)
                 {
-                    new Claim(ClaimTypes.Name, existingCustomer.Email),
-                    new Claim(ClaimTypes.Role, "Customer")
-                };
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                }
             }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid email or password.");
-                return View(customer);
-            }
+
+            return View(customer);
         }
         [Authorize(Roles = "Customer")]
         [HttpGet]
         public async Task<IActionResult> CustomerLogout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Customer");
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
  
         [HttpGet]
         [Authorize(Roles = "Customer")]
         public IActionResult CustomerProfile()
         {
-            // Get the currently authenticated user's email
-            var email = User.Identity.Name;
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var customer = _context.Customers.FirstOrDefault(c => c.Id == userId);
 
-            // Get the customer from the database using the email
-            var customer = _context.Customers.FirstOrDefault(c => c.Email == email);
+            if (customer != null)
+            {
+                var customerViewModel = _mapper.Map<CustomerViewModel>(customer);
+                return View(customerViewModel);
+            }
 
-            // Map the customer to the view model
-            var customerViewModel = _mapper.Map<CustomerViewModel>(customer);
+            return RedirectToAction("Index", "Home");
+        }
+        [HttpPost]
+        public IActionResult UpdateProfile(CustomerViewModel model, [FromForm] string First, [FromForm] string Last)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var customer = _context.Customers.FirstOrDefault(c => c.Id == userId);
 
-            return View(customerViewModel);
+                if (customer != null)
+                {
+                    customer.FullName = First+"-"+Last;
+                    _context.SaveChanges();
+                }
+
+                return RedirectToAction("CustomerProfile");
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult ChangePassword(CustomerViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var customer = _context.Customers.FirstOrDefault(c => c.Id == userId);
+
+                if (customer != null)
+                {
+                    var result = _userManager.ChangePasswordAsync(customer, model.Password, model.Password).Result;
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("CustomerProfile");
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                    }
+                }
+            }
+
+            return View(model);
         }
         [Authorize(Roles = "Customer")]
         [HttpPost]

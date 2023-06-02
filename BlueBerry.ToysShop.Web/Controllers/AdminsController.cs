@@ -12,15 +12,17 @@ namespace BlueBerry.ToysShop.Web.Controllers
 	{
 		private readonly UserManager<Admin> _userManager;
 		private readonly SignInManager<Admin> _signInManager;
-		private readonly IMapper _mapper;
+		private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMapper _mapper;
 		private readonly WebDbContext _context;
 
-		public AdminsController(UserManager<Admin> userManager, SignInManager<Admin> signInManager,IMapper mapper, WebDbContext context)
+		public AdminsController(UserManager<Admin> userManager, SignInManager<Admin> signInManager,IMapper mapper, WebDbContext context, RoleManager<IdentityRole> roleManager)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
 			_mapper = mapper;
 			_context = context;
+			_roleManager = roleManager;
 		}
 		[Authorize(Roles = "Admin")]
 		[HttpGet]
@@ -37,9 +39,10 @@ namespace BlueBerry.ToysShop.Web.Controllers
 			if (ModelState.IsValid)
 			{
 				var admin = _mapper.Map<Admin>(model);
-				
 				_context.Admins.Add(admin);
-				await _context.SaveChangesAsync();
+                await _userManager.CreateAsync(admin, model.Password);
+                await _userManager.AddToRoleAsync(admin, "Admin");
+                _context.SaveChanges();
 
                 return RedirectToAction("DisplayProduct", "Products");
 			}
