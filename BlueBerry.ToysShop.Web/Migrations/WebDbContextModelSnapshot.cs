@@ -47,7 +47,7 @@ namespace BlueBerry.ToysShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Admins");
+                    b.ToTable("Admins", (string)null);
                 });
 
             modelBuilder.Entity("BlueBerry.ToysShop.Web.Models.Category", b =>
@@ -64,7 +64,7 @@ namespace BlueBerry.ToysShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("BlueBerry.ToysShop.Web.Models.Customer", b =>
@@ -92,7 +92,7 @@ namespace BlueBerry.ToysShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("BlueBerry.ToysShop.Web.Models.Product", b =>
@@ -137,7 +137,7 @@ namespace BlueBerry.ToysShop.Web.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("BlueBerry.ToysShop.Web.Models.Product", b =>

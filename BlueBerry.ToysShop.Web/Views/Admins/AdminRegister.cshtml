@@ -1,0 +1,28 @@
+﻿
+@{
+    ViewData["Title"] = "AdminRegister";
+}
+@model AdminViewModel
+<h1>AdminRegister</h1>
+<form method="post" asp-controller="Admins" asp-action="AdminRegister">
+    <div>
+        <label>Ad:</label>
+        <input type="text" name="First" required>
+    </div>
+    <div>
+        <label>Soyad:</label>
+        <input type="text" name="Last" required>
+    </div>
+    <div>
+        <label>E-posta:</label>
+        <input type="email" asp-for="Email" required>  
+    </div>
+    <div>
+        <label>Şifre:</label>
+        <input type="password" asp-for="Password" required>
+    </div>
+    <div>
+        <input type="submit" value="Kayıt Ol">
+    </div>
+</form>
+

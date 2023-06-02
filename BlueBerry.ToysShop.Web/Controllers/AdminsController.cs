@@ -1,88 +1,95 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using BlueBerry.ToysShop.Web.Database_Settings;
 using BlueBerry.ToysShop.Web.Models;
 using BlueBerry.ToysShop.Web.ViewModels;
-using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
-using BlueBerry.ToysShop.Web.Database_Settings;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-	public class AdminsController : Controller
-	{
-		private readonly UserManager<Admin> _userManager;
-		private readonly SignInManager<Admin> _signInManager;
-		private readonly RoleManager<IdentityRole> _roleManager;
+    public class AdminsController:Controller
+    {
+        private readonly WebDbContext _context;
         private readonly IMapper _mapper;
-		private readonly WebDbContext _context;
 
-		public AdminsController(UserManager<Admin> userManager, SignInManager<Admin> signInManager,IMapper mapper, WebDbContext context, RoleManager<IdentityRole> roleManager)
-		{
-			_userManager = userManager;
-			_signInManager = signInManager;
-			_mapper = mapper;
-			_context = context;
-			_roleManager = roleManager;
-		}
-		[Authorize(Roles = "Admin")]
+        public AdminsController(WebDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
 		[HttpGet]
-		public IActionResult Register()
-		{
-         
-            return View();
-		}
-		[Authorize(Roles = "Admin")]
-		[HttpPost]
-		public async Task<IActionResult> Register(AdminViewModel model, [FromForm]string First, [FromForm]string Last)
-		{
-			model.FullName = First + "-" + Last;
-			if (ModelState.IsValid)
-			{
-				var admin = _mapper.Map<Admin>(model);
-				_context.Admins.Add(admin);
-                await _userManager.CreateAsync(admin, model.Password);
-                await _userManager.AddToRoleAsync(admin, "Admin");
-                _context.SaveChanges();
-
-                return RedirectToAction("DisplayProduct", "Products");
-			}
-            return View(model);
-		}
-
-		[Authorize(Roles = "Admin")]
-		[HttpGet]
-		public IActionResult Login()
+		public IActionResult AdminRegister()
 		{
 			return View();
 		}
-		[Authorize(Roles = "Admin")]
+
 		[HttpPost]
-		public async Task<IActionResult> Login(AdminViewModel model)
+		public async Task<IActionResult> AdminRegister(AdminViewModel model, [FromForm] string First, [FromForm] string Last)
 		{
 			if (ModelState.IsValid)
 			{
-				var user = await _userManager.FindByEmailAsync(model.Email);
-				if (user != null)
-				{
-					var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: false);
-					if (result.Succeeded)
-					{
-						return RedirectToAction("Index", "Home");
-					}
-				}
+				// Kullanıcıyı veritabanına kaydetme işlemlerini gerçekleştirin
+				// Örneğin:
 
-				ModelState.AddModelError(string.Empty, "Invalid email or password.");
+				model.FullName = First + "-" + Last;
+				// Veritabanına kullanıcıyı kaydedin
+				_context.Admins.Add(_mapper.Map<Admin>(model));
+				await _context.SaveChangesAsync();
+				// Kayıt işlemi başarılıysa yönlendirilecek sayfa
+				return RedirectToAction("Login", "Admins");
 			}
 
+			// Hata durumunda, kayıt sayfasını tekrar gösterin
 			return View(model);
 		}
-		[Authorize(Roles = "Admin")]
+
+		[HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login(AdminViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _context.Admins.SingleOrDefaultAsync(u => u.Email == model.Email);
+            if (user != null && user.Password == model.Password)
+            {
+                var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Role, "Admin")
+            };
+
+                var userIdentity = new ClaimsIdentity(claims, "AdminAuthentication");
+
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe
+                };
+
+                await HttpContext.SignInAsync("AdminAuthentication", new ClaimsPrincipal(userIdentity), authProperties);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError(string.Empty, "Geçersiz kullanıcı adı veya şifre.");
+            return View(model);
+        }
 		[HttpPost]
-		public async Task<IActionResult> Logout()
+		public async Task<IActionResult> AdminLogout()
 		{
-			await _signInManager.SignOutAsync();
+			await HttpContext.SignOutAsync("AdminAuthentication");
+
 			return RedirectToAction("Index", "Home");
 		}
 	}
 }
-
