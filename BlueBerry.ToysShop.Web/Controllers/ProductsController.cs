@@ -204,6 +204,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             return View();
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult AddProduct(ProductViewModel newProduct)
         {
@@ -295,6 +296,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             return result;
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult RemoveProduct(int productid)
         {
             var product = _context.Products.Find(productid);
@@ -302,6 +304,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _context.SaveChanges();
             return RedirectToAction("DisplayProduct");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult UpdateProduct(int productid)
         {
@@ -350,11 +353,13 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             return View(_mapper.Map<ProductUpdateViewModel>(product));
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult UpdateProduct(Product product)
         {
             return View();
         }
+        [Authorize(Roles = "Customer, Admin")]
         [HttpGet]
         [Route("Detaylar/Ürün/{productid}")]
         public IActionResult _DetailsProductPartial(int productid) {

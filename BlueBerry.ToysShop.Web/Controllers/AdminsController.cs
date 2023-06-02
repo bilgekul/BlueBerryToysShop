@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using BlueBerry.ToysShop.Web.Models;
 using BlueBerry.ToysShop.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
 using AutoMapper;
 using BlueBerry.ToysShop.Web.Database_Settings;
 

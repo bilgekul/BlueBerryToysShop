@@ -18,6 +18,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 		private readonly WebDbContext _context;
         private readonly IMapper _mapper;
+        
+         public CustomersController(WebDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -41,43 +43,50 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View();
         }
         [HttpPost]
+        public async Task<IActionResult> Login(CustomerViewModel customer)
         {
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customer.Email);
+            if (existingCustomer != null && existingCustomer.Password == customer.Password)
             {
-				var claims = new List<Claim>
-				{
-					new Claim(ClaimTypes.Name, existingCustomer.Email),
-					new Claim(ClaimTypes.Role, "Customer")
-				};
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, existingCustomer.Email),
+                    new Claim(ClaimTypes.Role, "Customer")
+                };
 
-				var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-				var principal = new ClaimsPrincipal(identity);
-				await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 return RedirectToAction("Index", "Home");
             }
             else
             {
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View(customer);
             }
         }
         [HttpGet]
+        public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
-		[HttpGet]
-		[Authorize(Roles = "Customer")]
-		public IActionResult CustomerProfile()
-		{
-			// Get the currently authenticated user's email
-			var email = User.Identity.Name;
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public IActionResult CustomerProfile()
+        {
+            // Get the currently authenticated user's email
+            var email = User.Identity.Name;
 
-			// Get the customer from the database using the email
-			var customer = _context.Customers.FirstOrDefault(c => c.Email == email);
+            // Get the customer from the database using the email
+            var customer = _context.Customers.FirstOrDefault(c => c.Email == email);
 
-			// Map the customer to the view model
-			var customerViewModel = _mapper.Map<CustomerViewModel>(customer);
+            // Map the customer to the view model
+            var customerViewModel = _mapper.Map<CustomerViewModel>(customer);
 
+            return View(customerViewModel);
         }
-
         [HttpPost]
         public IActionResult addToCart()
         {
