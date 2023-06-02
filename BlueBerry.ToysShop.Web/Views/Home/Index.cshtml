@@ -3,7 +3,20 @@
 }
 <div class="container">
     <header>
-		<button type="button" class="btn btn-outline-primary">Primary</button>
+        <button type="button" class="btn btn-primary" onclick="logout()">Logout</button>
     </header>
 </div>
-
+@section Scripts{
+    <script>
+        function logout() {
+            fetch('/Customers/CustomerLogout', {
+                method: 'GET'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/Customers/Login';
+                    }
+                });
+        }
+    </script>
+}

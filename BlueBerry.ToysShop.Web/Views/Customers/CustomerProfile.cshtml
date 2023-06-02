@@ -6,12 +6,10 @@
     <h3>Customer Information</h3>
     <p>Name: @Model.FullName</p>
     <p>Email: @Model.Email</p>
-    <!-- Diğer profil bilgilerini görüntüleyebilirsiniz -->
 </div>
 
-<!-- Profil bilgilerini düzenlemek için bir form -->
 <h3>Edit Profile</h3>
-<form asp-action="EditProfile" method="post">
+<form asp-controller="Customers" asp-action="EditProfile" method="post">
     <div class="form-group">
         <label for="fullName">Full Name</label>
         <input type="text" class="form-control" id="fullName" name="FullName" value="@Model.FullName">
@@ -20,8 +18,6 @@
         <label for="email">Email</label>
         <input type="email" class="form-control" id="email" name="Email" value="@Model.Email">
     </div>
-    <!-- Diğer profil bilgileri için form alanları eklenebilir -->
-
     <button type="submit" class="btn btn-primary">Save</button>
 </form>
 

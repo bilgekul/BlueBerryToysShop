@@ -8,7 +8,6 @@ using BlueBerry.ToysShop.Web.Database_Settings;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-	[Authorize(Roles = "Admin")]
 	public class AdminsController : Controller
 	{
 		private readonly UserManager<Admin> _userManager;
@@ -23,11 +22,14 @@ namespace BlueBerry.ToysShop.Web.Controllers
 			_mapper = mapper;
 			_context = context;
 		}
+		[Authorize(Roles = "Admin")]
 		[HttpGet]
 		public IActionResult Register()
 		{
-			return View();
+         
+            return View();
 		}
+		[Authorize(Roles = "Admin")]
 		[HttpPost]
 		public async Task<IActionResult> Register(AdminViewModel model, [FromForm]string First, [FromForm]string Last)
 		{
@@ -37,20 +39,20 @@ namespace BlueBerry.ToysShop.Web.Controllers
 				var admin = _mapper.Map<Admin>(model);
 				
 				_context.Admins.Add(admin);
-				_context.SaveChanges();
-				return RedirectToAction("Index", "Home");
-			}
+				await _context.SaveChangesAsync();
 
-			return View(model);
+                return RedirectToAction("DisplayProduct", "Products");
+			}
+            return View(model);
 		}
 
-
+		[Authorize(Roles = "Admin")]
 		[HttpGet]
 		public IActionResult Login()
 		{
 			return View();
 		}
-
+		[Authorize(Roles = "Admin")]
 		[HttpPost]
 		public async Task<IActionResult> Login(AdminViewModel model)
 		{
@@ -71,7 +73,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 			return View(model);
 		}
-
+		[Authorize(Roles = "Admin")]
 		[HttpPost]
 		public async Task<IActionResult> Logout()
 		{

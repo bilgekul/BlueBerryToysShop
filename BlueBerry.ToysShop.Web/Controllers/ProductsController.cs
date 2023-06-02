@@ -14,7 +14,6 @@ using System.Linq;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-	[Authorize(Roles = "Admin")]
     public class ProductsController:Controller
     {
         private readonly WebDbContext _context;

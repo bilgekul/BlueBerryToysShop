@@ -1,19 +1,10 @@
 ﻿
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Login";
 }
-
 @model AdminViewModel
-<h1>Register</h1>
-<form asp-controller="Admins" asp-action="Register" method="post">
-    <div class="form-group">
-        <label for="LoginName">Ad:</label>
-        <input type="text" id="LoginName" name="First">
-    </div>
-    <div class="form-group">
-        <label for="LoginName">Soyad:</label>
-        <input type="text" id="LoginName" name="Last">
-    </div>
+<h1>Login</h1>
+<form asp-controller="Admins" asp-action="Login" method="post">
     <div class="form-group">
         <label for="exampleInputEmail1">Email address</label>
         <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email" asp-for="Email">

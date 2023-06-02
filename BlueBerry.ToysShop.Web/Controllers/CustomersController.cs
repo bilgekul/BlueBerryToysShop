@@ -24,11 +24,13 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _context = context;
             _mapper = mapper;
         }
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public IActionResult SignUp()
         {
             return View();
         }
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public IActionResult SignUp(CustomerViewModel customer, [FromForm] string First, [FromForm] string Last)
         {
@@ -37,12 +39,14 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _context.SaveChanges();
             return RedirectToAction("Login");
         }
-        [HttpGet]
+		[Authorize(Roles = "Customer")]
+		[HttpGet]
         public IActionResult Login()
         {
             return View();
         }
-        [HttpPost]
+		[Authorize(Roles = "Customer")]
+		[HttpPost]
         public async Task<IActionResult> Login(CustomerViewModel customer)
         {
             var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customer.Email);
@@ -66,12 +70,14 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 return View(customer);
             }
         }
+        [Authorize(Roles = "Customer")]
         [HttpGet]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> CustomerLogout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Customer");
         }
+ 
         [HttpGet]
         [Authorize(Roles = "Customer")]
         public IActionResult CustomerProfile()
@@ -87,11 +93,13 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             return View(customerViewModel);
         }
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public IActionResult addToCart()
         {
             return View();
         }
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public IActionResult viewCart() { 
         
