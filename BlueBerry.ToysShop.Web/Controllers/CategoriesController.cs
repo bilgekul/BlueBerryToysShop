@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BlueBerry.ToysShop.Web.Database_Settings;
 using BlueBerry.ToysShop.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly WebDbContext _context;

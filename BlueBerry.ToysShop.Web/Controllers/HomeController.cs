@@ -1,6 +1,8 @@
 ﻿using BlueBerry.ToysShop.Web.Database_Settings;
 using BlueBerry.ToysShop.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Diagnostics;
 
 namespace BlueBerry.ToysShop.Web.Controllers
@@ -18,12 +20,10 @@ namespace BlueBerry.ToysShop.Web.Controllers
         {
             return View();
         }
-
         public IActionResult Privacy()
         {
             return View();
         }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

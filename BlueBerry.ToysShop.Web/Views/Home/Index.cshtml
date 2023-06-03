@@ -1,22 +1,24 @@
-﻿@{
+﻿﻿@{
     ViewData["Title"] = "Home Page";
 }
-<div class="container">
-    <header>
-        <button type="button" class="btn btn-primary" onclick="logout()">Logout</button>
-    </header>
+
+<div class="text-center mb-5">
+    <h1 class="display-4">Welcome</h1>
+    <p>
+        Learn about <a target="_blank" href="https://burakneis.com/asp-net-core-identity">
+            building Web apps with ASP.NET
+            Core Identity
+        </a>.
+    </p>
 </div>
-@section Scripts{
-    <script>
-        function logout() {
-            fetch('/Customers/CustomerLogout', {
-                method: 'GET'
-            })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/Customers/Login';
-                    }
-                });
-        }
-    </script>
+
+@{
+    var recoveryCodes = TempData["RecoveryCodes"];
+    if (recoveryCodes != null)
+    {
+        <div class="alert alert-info mb-5">
+            Your two-factor authenticator recovery codes below.
+            @string.Join(",", recoveryCodes as string[] ?? new string[] {})
+        </div>
+    }
 }

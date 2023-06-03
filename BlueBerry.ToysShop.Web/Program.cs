@@ -1,10 +1,16 @@
 ﻿using BlueBerry.ToysShop.Web.Database_Settings;
+using BlueBerry.ToysShop.Web.Helpers;
+using BlueBerry.ToysShop.Web.Identity_Settings;
+using BlueBerry.ToysShop.Web.Identity_Settings.Requirements;
+using BlueBerry.ToysShop.Web.Identity_Settings.Validators;
 using BlueBerry.ToysShop.Web.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using BlueBerry.ToysShop.Web.Models.Emails;
+using BlueBerry.ToysShop.Web.Models.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using MyAspNetCore.Web.Helpers;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,21 +24,88 @@ builder.Services.AddDbContext<WebDbContext>(options =>
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 // Dosya ve Resim işlemleri için Singleton nesnesi oluşturma
 builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
-// Yardımcı Sınıf işlemleri için Singleton nesnesi oluşturma
-builder.Services.AddSingleton<IHelper, Helper>();
-// Authentication işlemleri
-builder.Services.AddAuthentication("AdminAuthentication")
-     .AddCookie("AdminAuthentication", options =>
-     {
-         options.LoginPath = "/Admins/Login"; // Admin girişi için kullanılacak sayfa yolu
-		 options.AccessDeniedPath = "/Admins/AccessDenied"; // Yetkisiz erişim durumunda yönlendirilecek sayfa yolu
-	 });
-builder.Services.AddAuthentication("CustomerAuthentication")
-	.AddCookie("CustomerAuthentication", options =>
-	{
-		options.LoginPath = "/Customers/Login"; // Customer girişi için kullanılacak sayfa yolu
-		options.AccessDeniedPath = "/Customers/AccessDenied"; // Yetkisiz erişim durumunda yönlendirilecek sayfa yolu
-	});
+builder.Services.AddScoped<IAuthorizationHandler, MinimumAgeHandler>();
+builder.Services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
+builder.Services.Configure<Settings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<EmailHelper>();
+builder.Services.AddScoped<TwoFactorAuthenticationService>();
+builder.Services.AddIdentity<AppUser, AppRole>(options=>
+{
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = true;
+
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequiredUniqueChars = 1;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+
+    options.SignIn.RequireConfirmedEmail = true;
+}).AddUserValidator<UserValidator>().AddPasswordValidator<PasswordValidator>()
+.AddErrorDescriber<ErrorDescriber>().AddEntityFrameworkStores<WebDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = new PathString("/User/Login");
+    options.LogoutPath = new PathString("/User/Logout");
+    options.AccessDeniedPath = new PathString("/Home/AccessDenied");
+
+    options.Cookie = new()
+    {
+        Name = "IdentityCookie",
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        SecurePolicy = CookieSecurePolicy.Always
+    };
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+});
+
+builder.Services.AddAuthentication()
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration.GetValue<string>("ExternalLoginProviders:Facebook:AppId");
+    options.AppSecret = builder.Configuration.GetValue<string>("ExternalLoginProviders:Facebook:AppSecret");
+    //options.CallbackPath = new PathString("/User/FacebookCallback");
+})
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration.GetValue<string>("ExternalLoginProviders:Google:ClientId");
+    options.ClientSecret = builder.Configuration.GetValue<string>("ExternalLoginProviders:Google:ClientSecret");
+})
+.AddMicrosoftAccount(options =>
+{
+    options.ClientId = builder.Configuration.GetValue<string>("ExternalLoginProviders:Microsoft:ClientId");
+    options.ClientSecret = builder.Configuration.GetValue<string>("ExternalLoginProviders:Microsoft:ClientSecret");
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("HrDepartmentPolicy", policy =>
+    {
+        policy.RequireClaim("Department", Enum.GetName(Department.HR)!);
+    });
+
+    options.AddPolicy("SalesDepartmentPolicy", policy =>
+    {
+        policy.RequireClaim("Department", Enum.GetName(Department.Sales)!);
+    });
+
+    options.AddPolicy("EmployeePolicy", policy =>
+    {
+        policy.RequireClaim("Department", Enum.GetNames<Department>());
+    });
+
+    options.AddPolicy("AtLeast18Policy", policy =>
+    {
+        policy.AddRequirements(new MinimumAgeRequirement(18));
+    });
+});
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

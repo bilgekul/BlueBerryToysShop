@@ -10,7 +10,6 @@ namespace BlueBerry.ToysShop.Web.Mapping
         {
             CreateMap<Product,ProductViewModel>().ReverseMap();
             CreateMap<Product,ProductUpdateViewModel>().ReverseMap();
-            CreateMap<Customer,CustomerViewModel>().ReverseMap();
         }
     }
 }
