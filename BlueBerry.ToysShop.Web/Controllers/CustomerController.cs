@@ -3,6 +3,7 @@ using BlueBerry.ToysShop.Web.Identity_Settings;
 using BlueBerry.ToysShop.Web.Models.Identity;
 using BlueBerry.ToysShop.Web.ViewModels;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using System.Security.Claims;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
+    [Authorize(Roles ="Customer", Policy="CustomerOnly")]
     public class CustomerController:Controller
     {
         private readonly UserManager<AppUser> _userManager;

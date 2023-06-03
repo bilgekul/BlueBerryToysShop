@@ -4,13 +4,16 @@ using BlueBerry.ToysShop.Web.Models.Identity;
 using BlueBerry.ToysShop.Web.ViewModels;
 using Mapster;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Security.Claims;
 using System.Security.Policy;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
+    [Authorize(Roles = "Admin", Policy = "AdminOnly")]
     public class UserController : Controller
     {
         private readonly UserManager<AppUser> _userManager;

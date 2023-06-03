@@ -121,6 +121,14 @@ builder.Services.AddAuthorization(options =>
     {
         policy.AddRequirements(new MinimumAgeRequirement(18));
     });
+    options.AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireRole("Admin");
+    });
+    options.AddPolicy("CustomerOnly", policy =>
+    {
+        policy.RequireRole("Customer");
+    });
 });
 var app = builder.Build();
 // Configure the HTTP request pipeline.

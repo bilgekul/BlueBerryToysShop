@@ -11,6 +11,7 @@ using Mapster;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
+    [Authorize(Roles ="Admin", Policy ="AdminOnly")]
     public class AdminController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
