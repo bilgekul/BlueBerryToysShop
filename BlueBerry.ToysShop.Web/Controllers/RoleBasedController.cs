@@ -15,7 +15,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         [Authorize(Roles = "Editor, Moderator, Admin")]
         public IActionResult Articles() => View();
 
-        [Authorize(Roles = "User, Editor, Moderator, Admin")]
+        [Authorize(Roles = "User, Editor, Moderator, Admin, Customer")]
         public IActionResult Profile() => View();
     }
 }

@@ -26,7 +26,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _mapper = mapper;
             _fileProvider = provider;
         }
-       
+        [Authorize(Roles ="Admin, Customer")]
         [HttpGet]
         public IActionResult DisplayProduct()
         {
@@ -65,7 +65,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 			ViewBag.categorySelect = categorySelect;
 			return View(products);
         }
-       
+        [Authorize(Roles = "Admin, Customer")]
         [HttpPost]
 		public IActionResult DisplayProduct([FromForm] string productName, [FromForm] decimal? minPrice, [FromForm] decimal? maxPrice, [FromForm] List<string> brands, [FromForm] List<int> categories)
 		{
@@ -111,7 +111,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 			return PartialView("_ProductListPartial", products);
 		}
-      
+        [Authorize(Roles = "Admin, Customer")]
         [HttpPost]
 		public IActionResult DisplayProductMultiFilter(ProductFilterViewModel filters)
 		{
@@ -155,6 +155,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
 			return PartialView("_ProductListPartial", products);
 		}
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult AddProduct()
         {
@@ -353,6 +354,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         {
             return View();
         }
+        [Authorize(Roles = "Admin, Customer")]
         [HttpGet]
         [Route("Detaylar/Ürün/{productid}")]
         public IActionResult _DetailsProductPartial(int productid) {

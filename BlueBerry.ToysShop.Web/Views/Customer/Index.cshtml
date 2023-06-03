@@ -1,0 +1,29 @@
+﻿@model AppUser
+
+<h2>Müşteri Bilgileri</h2>
+
+<div>
+    <label>Kullanıcı Adı:</label>
+    <span>@Model.UserName</span>
+</div>
+
+<div>
+    <label>E-posta:</label>
+    <span>@Model.Email</span>
+</div>
+
+<div>
+    <label>Telefon Numarası:</label>
+    <span>@Model.PhoneNumber</span>
+</div>
+
+<div>
+    <label>Doğum Tarihi:</label>
+    <span>@Model.BirthDay.ToShortDateString()</span>
+</div>
+
+<div>
+    <label>Cinsiyet:</label>
+    <span>@Model.Gender</span>
+</div>
+<a asp-action="Profile" asp-controller="Customer" asp-route-Id="@Model.Id">Bilgileri Güncelle</a>

@@ -65,6 +65,22 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
 });
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = new PathString("/Customer/Login");
+    options.LogoutPath = new PathString("/Customer/Logout");
+    options.AccessDeniedPath = new PathString("/Home/AccessDenied");
+
+    options.Cookie = new()
+    {
+        Name = "IdentityCookie",
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        SecurePolicy = CookieSecurePolicy.Always
+    };
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+});
 
 builder.Services.AddAuthentication()
 .AddFacebook(options =>

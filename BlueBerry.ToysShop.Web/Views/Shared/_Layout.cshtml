@@ -1,11 +1,12 @@
-﻿﻿
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> userManager﻿
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ASP.NET Identity</title>
+    <title>@ViewData["Title"] - BlueBerryToysShop</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 </head>
 
@@ -27,24 +28,67 @@
                     <ul class="navbar-nav">
                         @if (Context.User.Identity?.IsAuthenticated ?? false)
                         {
+                            var user = await userManager.GetUserAsync(Context.User);
+                            var userRoles = await userManager.GetRolesAsync(user);
+                            var isCustomer = userRoles.Contains("Customer");
+
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Dashboard</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Logout"
-                                   asp-route-returnUrl="/Home/Index">Logout</a>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="customerDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Customer</a>
+                                <ul class="dropdown-menu" aria-labelledby="customerDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Register">Register</a></li>
+                                </ul>
                             </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">User</a>
+                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Register">Register</a></li>
+                                </ul>
+                            </li>
+
+                            @if (isCustomer)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Customer" asp-action="Logout" asp-route-returnUrl="/Home/Index">Logout</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="User" asp-action="Logout" asp-route-returnUrl="/Home/Index">Logout</a>
+                                </li>
+                            }
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Login">Login</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="customerDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Customer</a>
+                                <ul class="dropdown-menu" aria-labelledby="customerDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Register">Register</a></li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Register">Register</a>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">User</a>
+                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Register">Register</a></li>
+                                </ul>
                             </li>
                         }
                     </ul>
+
                 </div>
             </div>
         </nav>
@@ -56,7 +100,7 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">&copy; 2022 - ASP.NET Identity</div>
+        <div class="container">&copy; 2022 - BlueBerryToysShop</div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
