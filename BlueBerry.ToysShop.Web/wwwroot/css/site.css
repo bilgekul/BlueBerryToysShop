@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -15,4 +15,35 @@ html {
 
 body {
   margin-bottom: 60px;
+}
+.rating {
+  display: inline-block;
+}
+
+.rating input {
+  display: none;
+}
+
+.rating label {
+  color: #ffc107;
+  font-size: 1.5rem;
+  cursor: pointer;
+ }
+
+.rating label:before {
+  content: '\2605';
+ }
+
+.rating input:checked ~ label:before {
+  content: '\2605';
+}
+
+.rating input:checked ~ label:after {
+  content: '\00BD'; /* Yarım yıldız karakteri */
+  position: absolute;
+  left: 0;
+  overflow: hidden;
+}
+.fa-star.checked {
+    color: orange;
 }

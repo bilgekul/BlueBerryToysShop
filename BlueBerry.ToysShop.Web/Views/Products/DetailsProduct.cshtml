@@ -1,0 +1,177 @@
+﻿@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            function loadComments(productId) {
+                $("#loading").show();
+                $.ajax({
+                    type: "GET",
+                    url: "/Customer/VisitorCommentList?productId=" + productId,
+                    success: function (data) {
+                        console.log(data);
+                        $("#comments").empty(); // Yorumları temizle
+
+                        $.each(data, function (index, item) {
+                            let comment = `<div class="card mt-3">
+                                                                        <div class="card-body">
+                                                                                        <div class="d-flex justify-content-between">
+                                                                                    <h5 class="card-title">${item.name}</h5>
+                                                                                     <div id="commentlist-rating" class="rating">
+                                                                                                      <input type="radio" id="star5" name="rating" value="5" />
+                                                                                                      <label for="star5"></label>
+                                                                                                      <input type="radio" id="star4" name="rating" value="4" />
+                                                                                                      <label for="star4"></label>
+                                                                                                      <input type="radio" id="star3" name="rating" value="3" />
+                                                                                                      <label for="star3"></label>
+                                                                                                      <input type="radio" id="star2" name="rating" value="2" />
+                                                                                                      <label for="star2"></label>
+                                                                                                      <input type="radio" id="star1" name="rating" value="1" />
+                                                                                                      <label for="star1"></label>
+                                                                                                    </div>
+                                                                                                  </div>
+                                                                                             <h6 class="card-subtitle mb-2 text-muted">${item.created}</h6>
+                                                                            <p class="card-text">${item.comment}</p>
+                                                                        </div>
+                                                                    </div>`;
+                            $("#comments").append(comment);
+                        });
+
+                        $("#loading").hide();
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+            function saveComment(productId) {
+                var name = $("#Name").val();
+                var comment = $("#Comment").val();
+                var jsonData = { "name": name, "comment": comment, "productId": productId };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Customer/SaveVisitorComment",
+                    data: jsonData,
+                    success: function (data) {
+                        if (data.IsSuccess) {
+                            alert("Yorum kaydedildi");
+                            $("#Comment").val(""); // Yorum alanını temizle
+                            loadComments(productId); // Yorumları güncelle
+                            updateGeneralRating(productId); // Genel rating değerini güncelle
+                        } else {
+                            alert(data.Message);
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+
+            $("#btnSave").click(function () {
+                var productId = $("#comments").data("product-id");
+                saveComment(productId);
+            });
+
+            var productId = @Model.Id; // productId değerini düzgün bir şekilde almak için @Model.Id kullanın
+            loadComments(productId);
+        });
+    </script>
+}
+
+<div class="container d-flex">
+    <aside>
+        <img src="@(String.IsNullOrEmpty(Model.ImagePath) ? "/images/noimage.jpg" : "/images/"+Model.ImagePath )" class="rounded float-left" alt="product-ımg" style="width:500px; height:500px;">
+    </aside>
+    <section class="mx-5 col-md-4">
+        <header>
+            <h1 class="display-1">@(Model.Name)</h1>
+            <h2 class="display-4">@(Model.CategoryName)/Kategori ismi</h2>
+        </header>
+        <section>
+            <article>
+                @(Model.Description)
+            </article>
+        </section>
+        <main>
+            Buraya Listeye ekle / Satın al/ ve adetli sepete ekle eklenecek
+        </main>
+    </section>
+</div>
+
+<div class="container mt-5">
+    <aside class="row">
+        <section class="col-md-4">
+            <span>
+                Yayınlanma Tarihi: @(Model.PublishDate)
+            </span>
+            <br />
+            <span>
+                Stokta Kalan Adet: @(Model.Quantity)
+            </span>
+        </section>
+        <section class="col-md-4">
+            <div class="container">
+                <label for="general-rating">Genel puan:</label>
+                <div id="general-rating" class="rating">
+                    <input type="radio" id="star5" name="rating" value="5" />
+                    <label for="star5"></label>
+                    <input type="radio" id="star4" name="rating" value="4" />
+                    <label for="star4"></label>
+                    <input type="radio" id="star3" name="rating" value="3" />
+                    <label for="star3"></label>
+                    <input type="radio" id="star2" name="rating" value="2" />
+                    <label for="star2"></label>
+                    <input type="radio" id="star1" name="rating" value="1" />
+                    <label for="star1"></label>
+                </div>
+            </div>
+        </section>
+    </aside>
+</div>
+
+<div class="mb-5">
+    <div class="pb-3">
+        <h3>Yorumlar</h3>
+        @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+        {
+            <label for="Name" class="form-label">Kullanıcı:</label>
+            <input class="form-control" id="Name" name="Name" value="@User.Identity.Name" readonly>
+        }
+        <label for="comment-rating">Puan ver:</label>
+        <div id="comment-rating" class="rating">
+            <input type="radio" id="star5" name="rating" value="5" />
+            <label for="star5"></label>
+            <input type="radio" id="star4" name="rating" value="4" />
+            <label for="star4"></label>
+            <input type="radio" id="star3" name="rating" value="3" />
+            <label for="star3"></label>
+            <input type="radio" id="star2" name="rating" value="2" />
+            <label for="star2"></label>
+            <input type="radio" id="star1" name="rating" value="1" />
+            <label for="star1"></label>
+        </div>
+    </div>
+    <div class="form-floating mb-3">
+        <textarea id="Comment" name="Comment" class="form-control" placeholder="Yorum" style="height: 100px"></textarea>
+        <label for="Comment">Yorum</label>
+    </div>
+
+    @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+    {
+        <button id="btnSave" type="button" class="btn btn-primary">Kaydet</button>
+    }
+    else
+    {
+        <p>Giriş yaparak yorum yapabilirsiniz.</p>
+    }
+
+    <div id="loading">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    <div id="comments" data-product-id="@Model.Id">
+    </div>
+</div>

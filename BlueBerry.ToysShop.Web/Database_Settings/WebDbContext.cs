@@ -16,5 +16,7 @@ namespace BlueBerry.ToysShop.Web.Database_Settings
         public DbSet<AppUser> Users { get; set; }
         public DbSet<AppRole> Roles { get; set; }
 
+        public DbSet<Visitor> Visitors { get; set; }
+
     }
 }

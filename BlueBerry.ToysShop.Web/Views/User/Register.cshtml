@@ -9,7 +9,7 @@
         <div class="card">
             <h5 class="card-header">Sign up</h5>
             <div class="card-body">
-                <form asp-action="Register">
+                <form asp-action="Register" asp-controller="User" methode="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                     <div class="form-group">

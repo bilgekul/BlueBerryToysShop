@@ -9,7 +9,7 @@
         <div class="card">
             <h5 class="card-header">2FA Authentication Type</h5>
             <div class="card-body">
-                <form asp-action="TwoFactorAuthenticator">
+                <form asp-action="TwoFactorAuthenticator" asp-controller="User" methode="post">
                     <div class="alert alert-info mb-3">
                         Scan the code below into the google/microsoft authenticator
                         application on your phone or enter the code below on your phone.

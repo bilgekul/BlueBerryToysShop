@@ -1,5 +1,8 @@
-﻿using BlueBerry.ToysShop.Web.Helpers;
+﻿using AutoMapper;
+using BlueBerry.ToysShop.Web.Database_Settings;
+using BlueBerry.ToysShop.Web.Helpers;
 using BlueBerry.ToysShop.Web.Identity_Settings;
+using BlueBerry.ToysShop.Web.Models;
 using BlueBerry.ToysShop.Web.Models.Identity;
 using BlueBerry.ToysShop.Web.ViewModels;
 using Mapster;
@@ -11,22 +14,89 @@ using System.Security.Claims;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-    [Authorize(Roles ="Customer", Policy="CustomerOnly")]
     public class CustomerController:Controller
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly EmailHelper _emailHelper;
         private readonly TwoFactorAuthenticationService _twoFactorAuthService;
+        private readonly IMapper _mapper;
+        private readonly WebDbContext _context;
 
-        public CustomerController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TwoFactorAuthenticationService twoFactorAuthService, EmailHelper emailHelper)
+        public CustomerController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TwoFactorAuthenticationService twoFactorAuthService, EmailHelper emailHelper, IMapper mapper, WebDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailHelper = emailHelper;
             _twoFactorAuthService = twoFactorAuthService;
+            _mapper = mapper;
+            _context = context;
         }
-        public IActionResult Index()
+        [Authorize(Policy = "CustomerOnly")]
+        [HttpPost]
+        public async Task<IActionResult> SaveVisitorComment(string name, string comment, int productId, decimal productRating)
+        {
+            // Giriş yapan kullanıcının rolünü kontrol et
+            if (User.IsInRole("Customer"))
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                // Kullanıcı "Customer" rolüne sahipse yorum kaydetme işlemini yap
+                var visitor = new Visitor
+                {
+                    Name = name,
+                    Comment = comment,
+                    Created = DateTime.Now,
+                    UserId = user.Id,
+                    ProductId = productId,
+                    ProductRating = productRating
+                };
+
+                _context.Visitors.Add(visitor);
+                _context.SaveChanges();
+
+                // Yorum kaydedildikten sonra ürünün rating değerini güncelle
+                var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+                if (product != null)
+                {
+                    var visitorRatings = _context.Visitors.Where(v => v.ProductId == productId).Select(v => v.ProductRating).ToList();
+                    decimal averageRating = visitorRatings.Any() ? visitorRatings.Average() : 0;
+
+                    product.Rating = averageRating;
+                    _context.Products.Update(product);
+                    _context.SaveChanges();
+                }
+
+                return Json(new { IsSuccess = true });
+            }
+
+            // "Customer" rolüne sahip olmayan kullanıcılara hata mesajı döndür
+            return Json(new { IsSuccess = false, Message = "Yorum eklemek için giriş yapmanız gerekmektedir." });
+        }
+        [HttpGet]
+        public IActionResult VisitorCommentList(int productId)
+        {
+            var visitors = _context.Visitors
+                .Where(v => v.ProductId == productId)
+                .OrderByDescending(x => x.Created)
+                .ToList();
+
+            var visitorViewModels = _mapper.Map<List<VisitorViewModel>>(visitors);
+
+            return Json(visitorViewModels);
+        }
+        [HttpGet]
+        public IActionResult GetProductRating(int productId)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product != null)
+            {
+                return Json(new { averageRating = product.Rating });
+            }
+
+            return Json(new { averageRating = 0 });
+        }
+        public IActionResult CustomerIndex()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var user = _userManager.Users.FirstOrDefault(u => u.Id == userId);
@@ -37,10 +107,10 @@ namespace BlueBerry.ToysShop.Web.Controllers
             }
             return View(user);
         }
-        public IActionResult Register() => View();
+        public IActionResult CustomerRegister() => View();
 
         [HttpPost]
-        public async Task<IActionResult> Register(SignUpViewModel viewModel)
+        public async Task<IActionResult> CustomerRegister(SignUpViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -57,8 +127,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 var result = await _userManager.CreateAsync(user, viewModel.Password);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "Customer");
                     var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Customer", new
+                    var confirmationLink = Url.Action("CustomerConfirmEmail", "Customer", new
                     {
                         userId = user.Id,
                         token = confirmationToken
@@ -70,14 +141,13 @@ namespace BlueBerry.ToysShop.Web.Controllers
                         Body = $"Please <a href='{confirmationLink}'>click</a> to confirm your e-mail address.",
                         To = user.Email
                     });
-
-                    return RedirectToAction("Login");
+                    return RedirectToAction("CustomerLogin");
                 }
                 result.Errors.ToList().ForEach(f => ModelState.AddModelError(string.Empty, f.Description));
             }
             return View(viewModel);
         }
-        public IActionResult Login(string? returnUrl)
+        public IActionResult CustomerLogin(string? returnUrl)
         {
             if (returnUrl != null)
             {
@@ -87,7 +157,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(SignInViewModel viewModel)
+        public async Task<IActionResult> CustomerLogin(SignInViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -137,7 +207,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> TwoFactorLogin(string? returnUrl)
+        public async Task<IActionResult> CustomerTwoFactorLogin(string? returnUrl)
         {
             if (returnUrl != null)
             {
@@ -153,7 +223,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> TwoFactorLogin(TwoFactorLoginViewModel vieWModel)
+        public async Task<IActionResult> CustomerTwoFactorLogin(TwoFactorLoginViewModel vieWModel)
         {
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
@@ -179,9 +249,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View(vieWModel);
         }
 
-        public async Task Logout() => await _signInManager.SignOutAsync();
+        public async Task CustomerLogout() => await _signInManager.SignOutAsync();
 
-        public async Task<IActionResult> Profile()
+        public async Task<IActionResult> CustomerProfile()
         {
             var me = await _userManager.FindByNameAsync(User.Identity?.Name);
             if (me == null)
@@ -193,7 +263,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Profile(UpdateProfileViewModel viewModel)
+        public async Task<IActionResult> CustomerProfile(UpdateProfileViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -219,7 +289,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                             await _signInManager.SignOutAsync();
                             await _signInManager.SignInAsync(me, true);
 
-                            return RedirectToAction("Index", "Customer");
+                            return RedirectToAction("CustomerIndex", "Customer");
                         }
                         result.Errors.ToList().ForEach(f => ModelState.AddModelError(string.Empty, f.Description));
                     }
@@ -236,7 +306,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         public IActionResult ChangePassword() => View();
 
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel viewModel)
+        public async Task<IActionResult> CustomerChangePassword(ChangePasswordViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -253,7 +323,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                         await _signInManager.SignOutAsync();
                         await _signInManager.SignInAsync(me, true);
 
-                        return RedirectToAction("Index", "Customer");
+                        return RedirectToAction("CustomerIndex", "Customer");
                     }
                     result.Errors.ToList().ForEach(f => ModelState.AddModelError(string.Empty, f.Description));
                 }
@@ -266,7 +336,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View();
         }
 
-        public IActionResult ForgotPassword() => View();
+        public IActionResult CustomerForgotPassword() => View();
 
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel viewModel)
@@ -278,7 +348,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-                    var passwordLink = Url.Action("ResetPassword", "Customer", new
+                    var passwordLink = Url.Action("CustomerResetPassword", "Customer", new
                     {
                         userId = user.Id,
                         token = passwordResetToken
@@ -301,11 +371,11 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View(viewModel);
         }
 
-        public IActionResult ResetPassword(string userId, string token)
+        public IActionResult CustomerResetPassword(string userId, string token)
         {
             if (userId == null || token == null)
             {
-                return RedirectToAction("Login", "Customer");
+                return RedirectToAction("CustomerLogin", "Customer");
             }
 
             return View(new ResetPasswordViewModel
@@ -316,7 +386,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel viewModel)
+        public async Task<IActionResult> CustomerResetPassword(ResetPasswordViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -328,7 +398,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                     {
                         await _userManager.UpdateSecurityStampAsync(user);
 
-                        return RedirectToAction("Login", "Customer");
+                        return RedirectToAction("CustomerLogin", "Customer");
                     }
                     else
                     {
@@ -343,7 +413,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        public async Task<IActionResult> CustomerConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
@@ -351,13 +421,13 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 var result = await _userManager.ConfirmEmailAsync(user, token);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Login");
+                    return RedirectToAction("CustomerLogin");
                 }
             }
             return RedirectToAction("Index", "Home");
         }
 
-        public async Task<IActionResult> TwoFactorType()
+        public async Task<IActionResult> CustomerTwoFactorType()
         {
             var user = await _userManager.FindByNameAsync(User.Identity?.Name);
 
@@ -368,7 +438,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> TwoFactorType(TwoFactorTypeViewModel viewModel)
+        public async Task<IActionResult> CustomerTwoFactorType(TwoFactorTypeViewModel viewModel)
         {
             var user = await _userManager.FindByNameAsync(User.Identity?.Name);
             user.TwoFactorType = viewModel.TwoFactorType;
@@ -377,12 +447,12 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             if (viewModel.TwoFactorType == Models.TwoFactorType.Authenticator)
             {
-                return RedirectToAction("TwoFactorAuthenticator", "Customer");
+                return RedirectToAction("CustomerTwoFactorAuthenticator", "Customer");
             }
             return RedirectToAction("Index", "Home");
         }
 
-        public async Task<IActionResult> TwoFactorAuthenticator()
+        public async Task<IActionResult> CustomerTwoFactorAuthenticator()
         {
             var user = await _userManager.FindByNameAsync(User.Identity?.Name);
             if (user.TwoFactorEnabled && user.TwoFactorType == Models.TwoFactorType.Authenticator)
@@ -404,7 +474,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> TwoFactorAuthenticator(TwoFactorAuthenticatorViewModel viewModel)
+        public async Task<IActionResult> CustomerTwoFactorAuthenticator(TwoFactorAuthenticatorViewModel viewModel)
         {
             var user = await _userManager.FindByNameAsync(User.Identity?.Name);
             var verificationCode = viewModel.VerificationCode.Replace(" ", string.Empty).Replace("-", string.Empty);
@@ -418,33 +488,33 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult FacebookLogin(string returnUrl)
+        public IActionResult CustomerFacebookLogin(string returnUrl)
         {
-            var redirectUrl = Url.Action("ExternalResponse", "Customer", new { ReturnUrl = returnUrl });
+            var redirectUrl = Url.Action("CustomerExternalResponse", "Customer", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Facebook", redirectUrl);
             return new ChallengeResult("Facebook", properties);
         }
 
-        public IActionResult GoogleLogin(string returnUrl)
+        public IActionResult CustomerGoogleLogin(string returnUrl)
         {
-            var redirectUrl = Url.Action("ExternalResponse", "Customer", new { ReturnUrl = returnUrl });
+            var redirectUrl = Url.Action("CustomerExternalResponse", "Customer", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return new ChallengeResult("Google", properties);
         }
 
-        public IActionResult MicrosoftLogin(string returnUrl)
+        public IActionResult CustomerMicrosoftLogin(string returnUrl)
         {
-            var redirectUrl = Url.Action("ExternalResponse", "Customer", new { ReturnUrl = returnUrl });
+            var redirectUrl = Url.Action("CustomerExternalResponse", "Customer", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Microsoft", redirectUrl);
             return new ChallengeResult("Microsoft", properties);
         }
 
-        public async Task<IActionResult> ExternalResponse(string ReturnUrl = "/")
+        public async Task<IActionResult> CustomerExternalResponse(string ReturnUrl = "/")
         {
             var loginInfo = await _signInManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("CustomerLogin");
             }
 
             var externalLoginResult = await _signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, true);

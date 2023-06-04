@@ -11,7 +11,7 @@ using Mapster;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-    [Authorize(Roles ="Admin", Policy ="AdminOnly")]
+    [Authorize(Roles ="Admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -24,7 +24,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _roleManager = roleManager;
             _signInManager = signInManager;
         }
-
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Index() => View();
 
         public async Task<IActionResult> Users() => View(await _userManager.Users.ToListAsync());
@@ -40,7 +40,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             }
             return View(new UpsertRoleViewModel());
         }
-
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> UpsertRole(UpsertRoleViewModel viewModel)
         {
@@ -64,7 +64,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             }
             return View(viewModel);
         }
-
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> DeleteRole(string id)
         {
@@ -83,7 +83,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             }
             return RedirectToAction("Roles");
         }
-
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> EditUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -110,7 +110,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
             return View(viewModel);
         }
-
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> EditUser(EditUserViewModel viewModel)
         {

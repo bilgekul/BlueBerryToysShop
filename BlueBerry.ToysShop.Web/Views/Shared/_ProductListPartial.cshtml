@@ -17,7 +17,7 @@
         <div class="card-body">
             <h5 class="card-title">@item.Name</h5>
             <p class="card-text">@item.Description</p>
-            <a class="btn btn-primary" asp-controller="products" asp-action="_detailsproductpartial" asp-route-productid="@item.Id">Detaylar</a>
+            <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
 			<a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-id="@item.Id">Güncelle</a>
             <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-id="@item.Id">Sil</a>
             

@@ -49,8 +49,29 @@ builder.Services.AddIdentity<AppUser, AppRole>(options=>
 .AddErrorDescriber<ErrorDescriber>().AddEntityFrameworkStores<WebDbContext>()
 .AddDefaultTokenProviders();
 
+var serviceProvider = builder.Services.BuildServiceProvider();
+var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();
+// Customer rolünü oluşturma işlemleri
+if (!await roleManager.RoleExistsAsync("Customer"))
+{
+    var role = new AppRole
+    {
+        Name = "Customer"
+    };
+    await roleManager.CreateAsync(role);
+}
+// Admin rolünü oluşturma işlemleri
+if (!await roleManager.RoleExistsAsync("Admin"))
+{
+    var role = new AppRole
+    {
+        Name = "Admin"
+    };
+    await roleManager.CreateAsync(role);
+}
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    // User cookie yapılandırması
     options.LoginPath = new PathString("/User/Login");
     options.LogoutPath = new PathString("/User/Logout");
     options.AccessDeniedPath = new PathString("/Home/AccessDenied");
@@ -64,11 +85,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
-});
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = new PathString("/Customer/Login");
-    options.LogoutPath = new PathString("/Customer/Logout");
+
+    // Customer cookie yapılandırması
+    options.LoginPath = new PathString("/Customer/CustomerLogin");
+    options.LogoutPath = new PathString("/Customer/CustomerLogout");
     options.AccessDeniedPath = new PathString("/Home/AccessDenied");
 
     options.Cookie = new()

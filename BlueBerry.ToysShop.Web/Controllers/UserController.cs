@@ -13,7 +13,6 @@ using System.Security.Policy;
 
 namespace BlueBerry.ToysShop.Web.Controllers
 {
-    [Authorize(Roles = "Admin", Policy = "AdminOnly")]
     public class UserController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -49,6 +48,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 var result = await _userManager.CreateAsync(user, viewModel.Password);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "Admin");
                     var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = Url.Action("ConfirmEmail", "User", new
                     {
