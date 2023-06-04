@@ -1,4 +1,9 @@
-﻿@section Scripts {
+﻿@model ProductViewModel
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/js/star-rating.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/css/star-rating.min.css">
+
     <script type="text/javascript">
         $(document).ready(function () {
             function loadComments(productId) {
@@ -12,27 +17,27 @@
 
                         $.each(data, function (index, item) {
                             let comment = `<div class="card mt-3">
-                                                                        <div class="card-body">
-                                                                                        <div class="d-flex justify-content-between">
-                                                                                    <h5 class="card-title">${item.name}</h5>
-                                                                                     <div id="commentlist-rating" class="rating">
-                                                                                                      <input type="radio" id="star5" name="rating" value="5" />
-                                                                                                      <label for="star5"></label>
-                                                                                                      <input type="radio" id="star4" name="rating" value="4" />
-                                                                                                      <label for="star4"></label>
-                                                                                                      <input type="radio" id="star3" name="rating" value="3" />
-                                                                                                      <label for="star3"></label>
-                                                                                                      <input type="radio" id="star2" name="rating" value="2" />
-                                                                                                      <label for="star2"></label>
-                                                                                                      <input type="radio" id="star1" name="rating" value="1" />
-                                                                                                      <label for="star1"></label>
-                                                                                                    </div>
-                                                                                                  </div>
-                                                                                             <h6 class="card-subtitle mb-2 text-muted">${item.created}</h6>
-                                                                            <p class="card-text">${item.comment}</p>
-                                                                        </div>
-                                                                    </div>`;
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h5 class="card-title">${item.name}</h5>
+                                                                <div class="commentlist-rating" id="comment-rating-${index}" data-rating="${item.rating}"></div>
+                                                            </div>
+                                                            <h6 class="card-subtitle mb-2 text-muted">${item.created}</h6>
+                                                            <p class="card-text">${item.comment}</p>
+                                                        </div>
+                                                    </div>`;
                             $("#comments").append(comment);
+                        });
+
+                        $(".commentlist-rating").each(function () {
+                            var rating = $(this).data("rating");
+                            $(this).rating({
+                                displayOnly: true,
+                                step: 0.5,
+                                filledStar: '<i class="bi bi-star-fill"></i>',
+                                emptyStar: '<i class="bi bi-star"></i>',
+                                initialRating: rating
+                            });
                         });
 
                         $("#loading").hide();
@@ -42,10 +47,17 @@
                     }
                 });
             }
+
             function saveComment(productId) {
                 var name = $("#Name").val();
                 var comment = $("#Comment").val();
-                var jsonData = { "name": name, "comment": comment, "productId": productId };
+                var rating = $(".rating-input:checked").val();
+                var jsonData = {
+                    "name": name,
+                    "comment": comment,
+                    "productId": productId,
+                    "rating": rating
+                };
 
                 $.ajax({
                     type: "POST",
@@ -55,6 +67,7 @@
                         if (data.IsSuccess) {
                             alert("Yorum kaydedildi");
                             $("#Comment").val(""); // Yorum alanını temizle
+                            $(".rating-input").prop("checked", false); // Derecelendirmeyi temizle
                             loadComments(productId); // Yorumları güncelle
                             updateGeneralRating(productId); // Genel rating değerini güncelle
                         } else {
@@ -72,7 +85,7 @@
                 saveComment(productId);
             });
 
-            var productId = @Model.Id; // productId değerini düzgün bir şekilde almak için @Model.Id kullanın
+            var productId = @Model.Id;
             loadComments(productId);
         });
     </script>
@@ -112,18 +125,7 @@
         <section class="col-md-4">
             <div class="container">
                 <label for="general-rating">Genel puan:</label>
-                <div id="general-rating" class="rating">
-                    <input type="radio" id="star5" name="rating" value="5" />
-                    <label for="star5"></label>
-                    <input type="radio" id="star4" name="rating" value="4" />
-                    <label for="star4"></label>
-                    <input type="radio" id="star3" name="rating" value="3" />
-                    <label for="star3"></label>
-                    <input type="radio" id="star2" name="rating" value="2" />
-                    <label for="star2"></label>
-                    <input type="radio" id="star1" name="rating" value="1" />
-                    <label for="star1"></label>
-                </div>
+                <div id="general-rating" class="commentlist-rating" data-rating="@Model.Rating"></div>
             </div>
         </section>
     </aside>
@@ -137,18 +139,18 @@
             <label for="Name" class="form-label">Kullanıcı:</label>
             <input class="form-control" id="Name" name="Name" value="@User.Identity.Name" readonly>
         }
-        <label for="comment-rating">Puan ver:</label>
-        <div id="comment-rating" class="rating">
-            <input type="radio" id="star5" name="rating" value="5" />
-            <label for="star5"></label>
-            <input type="radio" id="star4" name="rating" value="4" />
-            <label for="star4"></label>
-            <input type="radio" id="star3" name="rating" value="3" />
-            <label for="star3"></label>
-            <input type="radio" id="star2" name="rating" value="2" />
-            <label for="star2"></label>
-            <input type="radio" id="star1" name="rating" value="1" />
-            <label for="star1"></label>
+        <label for="comment-rating-0">Puan ver:</label>
+        <div class="rating" id="rating">
+            <input class="rating-input" type="radio" id="rating-5" name="rating" value="5">
+            <label for="rating-5" class="rating-star"></label>
+            <input class="rating-input" type="radio" id="rating-4" name="rating" value="4">
+            <label for="rating-4" class="rating-star"></label>
+            <input class="rating-input" type="radio" id="rating-3" name="rating" value="3">
+            <label for="rating-3" class="rating-star"></label>
+            <input class="rating-input" type="radio" id="rating-2" name="rating" value="2">
+            <label for="rating-2" class="rating-star"></label>
+            <input class="rating-input" type="radio" id="rating-1" name="rating" value="1">
+            <label for="rating-1" class="rating-star"></label>
         </div>
     </div>
     <div class="form-floating mb-3">

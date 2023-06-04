@@ -34,7 +34,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
         [Authorize(Policy = "CustomerOnly")]
         [HttpPost]
-        public async Task<IActionResult> SaveVisitorComment(string name, string comment, int productId, decimal productRating)
+        public async Task<IActionResult> SaveVisitorComment(string name, string comment, int productId, int productRating)
         {
             // Giriş yapan kullanıcının rolünü kontrol et
             if (User.IsInRole("Customer"))
@@ -60,7 +60,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 if (product != null)
                 {
                     var visitorRatings = _context.Visitors.Where(v => v.ProductId == productId).Select(v => v.ProductRating).ToList();
-                    decimal averageRating = visitorRatings.Any() ? visitorRatings.Average() : 0;
+                    int averageRating = visitorRatings.Any() ? (int)visitorRatings.Average() : 0;
+
 
                     product.Rating = averageRating;
                     _context.Products.Update(product);
