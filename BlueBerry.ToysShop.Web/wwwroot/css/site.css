@@ -16,3 +16,11 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.rateYo .starFull:before {
+    content: "\2605";
+}
+
+.rateYo .starEmpty:before {
+    content: "\2606";
+}

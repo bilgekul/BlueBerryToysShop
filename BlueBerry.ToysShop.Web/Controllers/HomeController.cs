@@ -10,8 +10,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly WebDbContext _context;
-        public HomeController(ILogger<HomeController> logger, WebDbContext context)
+        private readonly AppDbContext _context;
+        public HomeController(ILogger<HomeController> logger, AppDbContext context)
         {
             _logger = logger;
             _context = context;

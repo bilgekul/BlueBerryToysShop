@@ -16,11 +16,11 @@ namespace BlueBerry.ToysShop.Web.Controllers
 {
     public class ProductsController:Controller
     {
-        private readonly WebDbContext _context;
+        private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFileProvider _fileProvider;
 
-        public ProductsController(WebDbContext context, IMapper mapper, IFileProvider provider)
+        public ProductsController(AppDbContext context, IMapper mapper, IFileProvider provider)
         {
             _context = context;
             _mapper = mapper;

@@ -10,7 +10,7 @@ namespace BlueBerry.ToysShop.Web.Models
         public string? Brand { get; set; }   
         public decimal Price { get; set; } 
         public int Quantity { get; set; }
-        public int Rating { get; set; }
+        public double Rating { get; set; }
         public int Expire { get; set; }
         public string? ImagePath { get; set; }
         public DateTime? PublishDate { get; set; }
@@ -18,6 +18,7 @@ namespace BlueBerry.ToysShop.Web.Models
         [ForeignKey("CategoryId")]
         public int CategoryId { get; set; }
         public Category Category { get; set; }
+
 
     }
 }

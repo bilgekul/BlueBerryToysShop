@@ -1,0 +1,31 @@
+﻿@model ProductList
+
+@{
+    ViewData["Title"] = "CustomerList";
+}
+
+<h1>CustomerList</h1>
+
+@if (Model == null)
+{
+    <p>Liste boş.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var listItem in Model.ListItems)
+        {
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="@(string.IsNullOrEmpty(listItem.Product?.ImagePath) ? "/images/noimage.jpg" : "/images/" + listItem.Product.ImagePath)" class="card-img-top" alt="@listItem.Product.Name">
+                    <div class="card-body">
+                        <h5 class="card-title">@listItem.Product.Name</h5>
+                        <p class="card-text">@listItem.Product.Description</p>
+                        <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@listItem.Product.Id">Detaylar</a>
+                        <a href="#" class="btn btn-primary">Satın Al</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

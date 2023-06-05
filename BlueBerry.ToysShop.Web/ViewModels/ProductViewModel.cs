@@ -10,7 +10,7 @@ namespace BlueBerry.ToysShop.Web.ViewModels
         public string? Brand { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
-        public int Rating { get; set; }
+        public double Rating { get; set; }
         public int Expire { get; set; }
 
         [ValidateNever]

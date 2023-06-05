@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿/*using AutoMapper;
 using BlueBerry.ToysShop.Web.Database_Settings;
 using BlueBerry.ToysShop.Web.Helpers;
 using BlueBerry.ToysShop.Web.Identity_Settings;
@@ -32,16 +32,158 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _mapper = mapper;
             _context = context;
         }
+        public IActionResult ClearCart()
+        {
+            return RedirectToAction("Cart");
+        }
+
+        public IActionResult Checkout()
+        {
+            
+
+            return RedirectToAction("PaymentSuccess");
+        }
+
+        public IActionResult PaymentSuccess()
+        {
+            return View();
+        }
+        [HttpPost]
+           public IActionResult AddToCart(int productId)
+        { 
+            if (User.IsInRole("Customer"))
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+                if(user != null)
+                {
+                     var cart = _context.Carts.FirstOrDefault(c => c.UserName == username);
+                     if (cart != null)
+                                    {
+                                        var existingCartItem = _context.CartItems.FirstOrDefault(ci => ci.CartId == cart.Id && ci.ProductId == productId);
+                                        if (existingCartItem != null)
+                                        {
+                                            existingCartItem.Quantity++;
+                                        }
+                                        else
+                                        {
+                                            var newCartItem = new CartItem
+                                            {
+                                                CartId = cart.Id,
+                                                ProductId = productId,
+                                                Quantity = 1
+                                            };
+
+                                            _context.CartItems.Add(newCartItem);
+                                        }
+
+                                        _context.SaveChanges();
+                                    }
+                     else
+                                    {
+                                        // Kullanıcının sepeti henüz yok, yeni bir sepet oluştur
+                                        var newCart = new Cart
+                                        {
+                                            UserName = username
+                                        };
+
+                                        _context.Carts.Add(newCart);
+
+                                        var newCartItem = new CartItem
+                                        {
+                                            CartId = newCart.Id,
+                                            ProductId = productId,
+                                            Quantity = 1
+                                        };
+
+                                        _context.CartItems.Add(newCartItem);
+
+                                        _context.SaveChanges();
+                                    }
+                }
+                
+
+                return RedirectToAction("Cart");
+            }
+
+            return Json(new { IsSuccess = false, Message = "Ürünü sepete eklemek için giriş yapmanız gerekmektedir." });
+        }
+
+        [HttpGet]
+        public IActionResult CustomerList()
+        {
+            var username = User.Identity.Name; 
+            var productList = _context.ProductLists
+                .Include(pl => pl.ListItems)
+                .ThenInclude(li => li.Product)
+                .FirstOrDefault(pl => pl.UserName == username);
+            return View(productList);
+        }
+        [HttpPost]
+        public IActionResult AddToList(int productId)
+        {
+            if (User.IsInRole("Customer"))
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+                if (user != null)
+                {
+                    var productList = _context.ProductLists.FirstOrDefault(pl => pl.UserName == username);
+                    if (productList != null)
+                    {
+                        var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+                        if (product != null)
+                        {
+                            var listItem = new ListItem
+                            {
+                                ProductId = product.Id,
+                                ListId = productList.Id
+                            };
+
+                            _context.ListItems.Add(listItem);
+                            _context.SaveChanges();
+                        }
+                    }
+                    else
+                    {
+                        var newList = new ProductList
+                        {
+                            UserName = username
+                        };
+
+                        _context.ProductLists.Add(newList);
+                        _context.SaveChanges();
+
+                        var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+                        if (product != null)
+                        {
+                            var listItem = new ListItem
+                            {
+                                ProductId = product.Id,
+                                ListId = newList.Id
+                            };
+
+                            _context.ListItems.Add(listItem);
+                            _context.SaveChanges();
+                        }
+                    }
+                }
+                return RedirectToAction("Ürün", "Detaylar", new { id = productId });
+            }
+            return Json(new { IsSuccess = false, Message = "Ürünü listenize eklemek için giriş yapmanız gerekmektedir." });
+        }
+
+
+
+
         [Authorize(Policy = "CustomerOnly")]
         [HttpPost]
-        public async Task<IActionResult> SaveVisitorComment(string name, string comment, int productId, int productRating)
+        public async Task<IActionResult> SaveVisitorComment(string name, string comment, int productId, double productRating)
         {
-            // Giriş yapan kullanıcının rolünü kontrol et
             if (User.IsInRole("Customer"))
             {
                 var user = await _userManager.GetUserAsync(User);
-
-                // Kullanıcı "Customer" rolüne sahipse yorum kaydetme işlemini yap
+                productRating = Math.Max(0, Math.Min(5, productRating));
                 var visitor = new Visitor
                 {
                     Name = name,
@@ -54,13 +196,11 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
                 _context.Visitors.Add(visitor);
                 _context.SaveChanges();
-
-                // Yorum kaydedildikten sonra ürünün rating değerini güncelle
                 var product = _context.Products.FirstOrDefault(p => p.Id == productId);
                 if (product != null)
                 {
                     var visitorRatings = _context.Visitors.Where(v => v.ProductId == productId).Select(v => v.ProductRating).ToList();
-                    int averageRating = visitorRatings.Any() ? (int)visitorRatings.Average() : 0;
+                    double averageRating = visitorRatings.Any() ?(int)visitorRatings.Average() : 0;
 
 
                     product.Rating = averageRating;
@@ -70,8 +210,6 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
                 return Json(new { IsSuccess = true });
             }
-
-            // "Customer" rolüne sahip olmayan kullanıcılara hata mesajı döndür
             return Json(new { IsSuccess = false, Message = "Yorum eklemek için giriş yapmanız gerekmektedir." });
         }
         [HttpGet]
@@ -179,7 +317,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                         {
                             return Redirect(returnUrl.ToString() ?? "/");
                         }
-                        return RedirectToAction("Index", "Customer");
+                        return RedirectToAction("CustomerIndex", "Customer");
                     }
                     else if (result.RequiresTwoFactor)
                     {
@@ -593,3 +731,4 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
     }
 }
+*/

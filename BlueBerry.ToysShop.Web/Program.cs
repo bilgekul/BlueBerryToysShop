@@ -16,7 +16,7 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<WebDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
 });
@@ -46,7 +46,7 @@ builder.Services.AddIdentity<AppUser, AppRole>(options=>
 
     options.SignIn.RequireConfirmedEmail = true;
 }).AddUserValidator<UserValidator>().AddPasswordValidator<PasswordValidator>()
-.AddErrorDescriber<ErrorDescriber>().AddEntityFrameworkStores<WebDbContext>()
+.AddErrorDescriber<ErrorDescriber>().AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
 var serviceProvider = builder.Services.BuildServiceProvider();

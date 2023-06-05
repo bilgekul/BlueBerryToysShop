@@ -1,0 +1,29 @@
+﻿@model List<CartItem>
+
+<h1>Sepetim</h1>
+
+@if (Model.Count == 0)
+{
+    <p>Sepetiniz boş.</p>
+}
+else
+{
+    <table>
+        <tr>
+            <th>Ürün Adı</th>
+            <th>Adet</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+            </tr>
+        }
+    </table>
+}
+
+<div>
+	<a asp-controller="Customer" asp-action="ClearCar">Sepeti Temizle</a>
+    <a asp-controller="Customer" asp-action="Checkout">Ödeme Yap</a>
+</div>
