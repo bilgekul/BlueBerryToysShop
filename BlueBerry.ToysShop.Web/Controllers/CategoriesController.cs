@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,9 +15,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
-        private readonly WebDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CategoriesController(WebDbContext context)
+        public CategoriesController(AppDbContext context)
         {
             _context = context;
         }
@@ -164,4 +164,3 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
     }
 }
-*/

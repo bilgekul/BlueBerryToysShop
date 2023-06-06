@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewData["Title"] = "Result";
+}
+@model List<ProductViewModel>
+<h1>Arama Sonuçları</h1>
+@{
+    <style>
+        #result-price{
+            font-size:20px;
+        }
+    </style>
+}
+@if (Model != null && Model.Count > 0)
+{
+    <ul>
+        @foreach (var product in Model)
+        {
+            <li>
+                <div class="card" style="width:300px;">
+                    <div class="card-header">
+						<h5 class="card-title">@product.Name</h5>
+                    </div>
+                    @if (!String.IsNullOrEmpty(product.ImagePath))
+                    {
+                        <img class="card-img-top" src="/images/@(product.ImagePath)" alt="Card image cap" />
+                    }
+                    else
+                    {
+                        <img class="card-img-top" src="/images/not-found-image.jpg" />
+                    }
+                    <div class="card-body">
+                        <div>
+
+                        </div>
+                        <div>
+							<span class="card-text"><strong id="result-price">@product.Price TL</strong></span>
+							<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@product.Id">Detaylar</a>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Ürün bulunamadı.</p>
+}

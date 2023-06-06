@@ -1,4 +1,4 @@
-﻿/*using AutoMapper;
+﻿using AutoMapper;
 using BlueBerry.ToysShop.Web.Database_Settings;
 using BlueBerry.ToysShop.Web.Helpers;
 using BlueBerry.ToysShop.Web.Identity_Settings;
@@ -21,9 +21,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
         private readonly EmailHelper _emailHelper;
         private readonly TwoFactorAuthenticationService _twoFactorAuthService;
         private readonly IMapper _mapper;
-        private readonly WebDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CustomerController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TwoFactorAuthenticationService twoFactorAuthService, EmailHelper emailHelper, IMapper mapper, WebDbContext context)
+        public CustomerController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TwoFactorAuthenticationService twoFactorAuthService, EmailHelper emailHelper, IMapper mapper, AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -79,9 +79,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
                                         _context.SaveChanges();
                                     }
-                     else
+                                     else
                                     {
-                                        // Kullanıcının sepeti henüz yok, yeni bir sepet oluştur
                                         var newCart = new Cart
                                         {
                                             UserName = username
@@ -168,6 +167,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                         }
                     }
                 }
+                TempData["status"] = "Ürün listeye eklendi.";
                 return RedirectToAction("Ürün", "Detaylar", new { id = productId });
             }
             return Json(new { IsSuccess = false, Message = "Ürünü listenize eklemek için giriş yapmanız gerekmektedir." });
@@ -731,4 +731,3 @@ namespace BlueBerry.ToysShop.Web.Controllers
 
     }
 }
-*/

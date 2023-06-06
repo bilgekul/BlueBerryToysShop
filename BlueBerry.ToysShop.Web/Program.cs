@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Conn"));
 });
 // Mapleme olaylarını kontrol etme
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
@@ -29,7 +29,7 @@ builder.Services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
 builder.Services.Configure<Settings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailHelper>();
 builder.Services.AddScoped<TwoFactorAuthenticationService>();
-builder.Services.AddIdentity<AppUser, AppRole>(options=>
+builder.Services.AddIdentity<AppUser, AppRole>(options =>
 {
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = true;
@@ -45,9 +45,11 @@ builder.Services.AddIdentity<AppUser, AppRole>(options=>
     options.Lockout.MaxFailedAccessAttempts = 5;
 
     options.SignIn.RequireConfirmedEmail = true;
+
 }).AddUserValidator<UserValidator>().AddPasswordValidator<PasswordValidator>()
 .AddErrorDescriber<ErrorDescriber>().AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
+
 
 var serviceProvider = builder.Services.BuildServiceProvider();
 var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();

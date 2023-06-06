@@ -18,9 +18,16 @@
             <h5 class="card-title">@item.Name</h5>
             <p class="card-text">@item.Description</p>
             <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
-			<a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-id="@item.Id">Güncelle</a>
-            <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-id="@item.Id">Sil</a>
-            
+                @if (!User.IsInRole("Admin"))
+                {
+                    <a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                    <a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                    <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                }
             </div>
         </div>
     }

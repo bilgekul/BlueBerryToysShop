@@ -234,8 +234,8 @@ namespace BlueBerry.ToysShop.Web.Controllers
                     }
                     _context.Products.Add(product);
                     _context.SaveChanges();
-
-                        return RedirectToAction("DisplayProduct");
+                    TempData["status"] = "Ürün başarıyla eklendi.";
+                    return RedirectToAction("DisplayProduct");
                 }catch(Exception)
                 {
                     result = View();
@@ -297,6 +297,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             var product = _context.Products.First(x=> x.Id == productid);
             _context.Products.Remove(product);
             _context.SaveChanges();
+            TempData["status"] = "Ürün başarıyla silindi.";
             return RedirectToAction("DisplayProduct");
         }
         [Authorize(Roles = "Admin")]
@@ -350,9 +351,74 @@ namespace BlueBerry.ToysShop.Web.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult UpdateProduct(Product product)
+        public IActionResult UpdateProduct(ProductViewModel updateProduct)
         {
-            return View();
+            ViewBag.ExpireValue = updateProduct.Expire;
+            var expireSelect = new SelectList(new List<ExpireSelectList>()
+            {
+                new(){Data="1 Ay",Value=1},
+                 new(){Data="3 Ay",Value=3},
+                  new(){Data="6 Ay",Value=6},
+                   new(){Data="12 Ay",Value=12},
+                    new(){Data="24 Ay",Value=24}
+
+            }, "Value", "Data");
+            Dictionary<string, int> dictionary = new Dictionary<string, int>();
+            foreach (var item in expireSelect)
+            {
+                int value;
+                if (int.TryParse(item.Value, out value))
+                {
+                    dictionary.Add(item.Text, value);
+                }
+                else
+                {
+                    dictionary.Add(item.Text, 0);
+                    ModelState.AddModelError("", "Bir hata oluştu. Geçerli bir değer sağlanamadı.");
+                }
+            }
+            ViewBag.ExpireSelect = dictionary;
+            ViewBag.BrandSelect = new SelectList(new List<BrandSelectList>()
+            {
+                new(){Data="Lego",Value="Lego"},
+                 new(){Data="FisherPrice",Value="FisherPrice"},
+                  new(){Data="Barbie",Value="Barbie"},
+                   new(){Data="Hot Wheels",Value="Hot Wheels"},
+                    new(){Data="Crafy",Value="Crafy"},
+                     new(){Data="Dollz'n More",Value="Dollz'n More"},
+                      new(){Data="BLX",Value="BLX"},
+                       new(){Data="Play-Doh",Value="Play-Doh"},
+                        new(){Data="Hasbro",Value="Hasbro"},
+            }, "Value", "Data");
+
+            var categories = _context.Category?.ToList() ?? new List<Category>();
+
+            ViewBag.categorySelect = new SelectList(categories, "Id", "Name");
+            if (updateProduct.Image != null && updateProduct.Image.Length > 0)
+            {
+                var root = _fileProvider.GetDirectoryContents("wwwroot");
+
+                var images = root.First(x => x.Name == "images");
+
+
+                var randomImageName = Guid.NewGuid() + Path.GetExtension(updateProduct.Image.FileName);
+
+
+                var path = Path.Combine(images.PhysicalPath, randomImageName);
+
+
+                using var stream = new FileStream(path, FileMode.Create);
+
+
+                updateProduct.Image.CopyTo(stream);
+
+                updateProduct.ImagePath = randomImageName;
+            }
+            var product = _mapper.Map<Product>(updateProduct);
+            _context.Products.Update(product);
+            _context.SaveChanges();
+            TempData["status"] = "Ürün başarıyla güncellendi.";
+            return RedirectToAction("DisplayProduct");
         }
         [HttpGet]
         [Route("Detaylar/Ürün/{productid}")]

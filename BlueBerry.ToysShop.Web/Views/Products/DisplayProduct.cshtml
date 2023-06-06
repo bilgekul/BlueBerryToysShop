@@ -6,6 +6,12 @@
     Dictionary<string, string> brandSelect = ViewBag.BrandSelect as Dictionary<string, string>;
 }
 
+@if (TempData["status"] != null)
+{
+    <div class="alert alert-primary" role="alert">
+        @TempData["status"]
+    </div>
+}
 @model List<ProductViewModel>
 @section Scripts{
     <script type="text/javascript">
@@ -44,8 +50,8 @@
 }
 <h1>DisplayProduct</h1>
 <div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
+    <div class="col-md-6">
+        <div class="row justify-content-center mt-5">
             <form class="d-flex" id="productSearchForm">
                 <label for="product-search">Ürün Adı:</label>
                 <input class="form-control me-2" type="search" id="product-search" placeholder="Arama yap..." aria-label="Search">
@@ -91,7 +97,7 @@
 <div class="container">
     @if (Model != null && Model.Any())
     {
-        <div id="productListContainer">
+        <div class="container d-flex justify-content-between" id="productListContainer">
             @Html.Partial("_ProductListPartial", Model)
         </div>
     }
@@ -99,7 +105,7 @@
     {
         @if (Model != null && Model.Any())
         {
-            <div id="productListContainer">
+            <div class="container d-flex justify-content-between" id="productListContainer">
                 @foreach (var item in Model)
                 {
                     <div class="card" style="width: 18rem;">
@@ -115,8 +121,16 @@
                             <h5 class="card-title">@item.Name</h5>
                             <p class="card-text">@item.Description</p>
                             <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
-                            <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-                            <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                            @if (!User.IsInRole("Admin"))
+                            {
+                                <a style="display:none;"class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                                <a style="display:none;"class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                            }
+                            else
+                            {
+                                <a  class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                                <a  class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                            }
                         </div>
                     </div>
                 }

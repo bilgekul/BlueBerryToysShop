@@ -1,17 +1,9 @@
 ﻿﻿@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="text-center mb-5">
-    <h1 class="display-4">Welcome</h1>
-    <p>
-        Learn about <a target="_blank" href="https://burakneis.com/asp-net-core-identity">
-            building Web apps with ASP.NET
-            Core Identity
-        </a>.
-    </p>
-</div>
-
+@{
+    Dictionary<string, string> brandSelect = ViewBag.BrandSelect as Dictionary<string, string>;
+}
 @{
     var recoveryCodes = TempData["RecoveryCodes"];
     if (recoveryCodes != null)
@@ -22,3 +14,109 @@
         </div>
     }
 }
+@{
+	<style>
+		#main-page-article{
+			opacity:0.9;
+			box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+			border-radius: 20px;
+			height:400px;
+		}
+		.trailer > legends{
+			font-weight: 600;
+			font-size: 70px;
+			position:relative;
+			left:50px;
+		}
+		.direction > span{
+			font-weight:200;
+			font-size : 20px;
+			position:relative;
+			top: 130px;
+			left:740px;
+		}
+		#direction-btn{
+			position:relative;
+			top:130px;
+			left:750px;
+		}
+		.search-bar {
+			position:relative;
+			left:330px;
+			top:-30px;
+		}
+	</style>
+}
+@model List<ProductViewModel>
+<div class="search-bar">
+	<form class="d-flex" id="productSearchForm" asp-controller="Home" asp-action="Result" method="post">
+		<input class="form-control me-2" type="search" id="product-search" placeholder="Oyuncak ara..." aria-label="Search" style="width:600px" name="searchproduct">
+		<button type submit class="btn btn-secondary" id="searchButton">Ara</button>
+	</form>
+</div>
+<div class="container">
+	<article id="main-page-article">
+		    <section class ="trailer">
+				<legends>Türkiye'nin en iyi oyuncak satış mağazası</legends>
+			</section>
+			<section class="direction">
+			<span>Birbirinden kaliteli oyuncaklar için tıkla</span>
+				<a id="direction-btn" class="btn btn-primary" asp-controller="products" asp-action="displayproduct">Ürünlere git</a>
+			</section>
+	</article>
+</div>
+<div class="container" id="slide-bar">
+	
+</div>
+<div class="container" id="recomment-container">
+	<div class="container">
+		@if (Model != null && Model.Any())
+		{
+			<div class="container d-flex justify-content-between" id="productListContainer">
+				@Html.Partial("_ProductListPartial", Model)
+			</div>
+		}
+		else
+		{
+			@if (Model != null && Model.Any())
+			{
+				<div class="container d-flex justify-content-between" id="productListContainer">
+					@foreach (var item in Model)
+					{
+						<div class="card" style="width: 18rem;">
+							@if (!String.IsNullOrEmpty(item.ImagePath))
+							{
+								<img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
+							}
+							else
+							{
+								<img class="card-img-top" src="/images/not-found-image.jpg" />
+							}
+							<div class="card-body">
+								<h5 class="card-title">@item.Name</h5>
+								<p class="card-text">@item.Description</p>
+								<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
+								@if (!User.IsInRole("Admin"))
+								{
+									<a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+									<a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+								}
+								else
+								{
+									<a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+									<a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+								}
+							</div>
+						</div>
+					}
+				</div>
+			}
+			else
+			{
+				<p>No products found.</p>
+			}
+		}
+	</div>
+</div>
+
+

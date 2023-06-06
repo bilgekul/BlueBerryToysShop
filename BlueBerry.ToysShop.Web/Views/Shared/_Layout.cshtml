@@ -9,6 +9,7 @@
     <title>@ViewData["Title"] - BlueBerryToysShop</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/design.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
@@ -87,13 +88,10 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Products" asp-action="DisplayProduct">Ürünler</a>
                                 </li>
-
-                            }
-                            else
-                            {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="User" asp-action="Logout" asp-route-returnUrl="/Home/Index">Logout</a>
                                 </li>
+
                             }
                         }
                         else

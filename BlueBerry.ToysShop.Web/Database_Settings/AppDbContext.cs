@@ -21,14 +21,5 @@ namespace BlueBerry.ToysShop.Web.Database_Settings
         public DbSet<ListItem> ListItems { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // AppRole tablo adını "AspNetRoles" olarak ayarla
-            modelBuilder.Entity<AppRole>().ToTable("AspNetRoles");
-        }
     }
 }
-
