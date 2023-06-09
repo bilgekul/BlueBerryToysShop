@@ -10,9 +10,10 @@ namespace BlueBerry.ToysShop.Web.Identity_Settings
 
             public override IdentityError PasswordTooShort(int length) => new() { Code = "PasswordTooShort", Description = $"Şifre en az {length} karakter olmalıdır." };
 
-            // Custom Errors
-            public static IdentityError PasswordContainsUsername() => new() { Code = "PasswordContainsUsername", Description = "Password can not contains user name." };
-            public static IdentityError UserNameLength() => new() { Code = "UserNameLength", Description = "User name must be at least 6 characters." };
-            public static IdentityError UserNameContainsEmail() => new() { Code = "UserNameContainsEmail", Description = "User name can not contains email name." };
+            public static IdentityError PasswordContainsUsername() => new() { Code = "PasswordContainsUsername", Description = "Parola kullanıcı adı içeremez." };
+
+            public static IdentityError UserNameLength() => new() { Code = "UserNameLength", Description = "Kullanıcı adı en az 6 karakter olmalıdır." };
+
+            public static IdentityError UserNameContainsEmail() => new() { Code = "UserNameContainsEmail", Description = "Kullanıcı adı e-posta adı içeremez." };
         }
 }

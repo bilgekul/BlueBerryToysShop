@@ -1,18 +1,29 @@
 ﻿@{
-    ViewData["Title"] = "DisplayProduct";
+    ViewData["Title"] = "Ürünler";
 }
-
+@model List<ProductViewModel>
 @{
     Dictionary<string, string> brandSelect = ViewBag.BrandSelect as Dictionary<string, string>;
 }
-
 @if (TempData["status"] != null)
 {
     <div class="alert alert-primary" role="alert">
         @TempData["status"]
     </div>
 }
-@model List<ProductViewModel>
+@{
+	<style>
+		#overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color:rgba(0, 0, 0, 0.5); 
+			z-index: 2;
+			display: none; 
+		}</style>
+}
 @section Scripts{
     <script type="text/javascript">
         $(document).ready(function () {
@@ -46,101 +57,150 @@
                 });
             });
         });
+
+		var openOverlayButton = document.getElementById('openOverlayButton');
+		var overlay = document.getElementById('overlay');
+
+		openOverlayButton.addEventListener('click', function () {
+			overlay.style.display = 'block';
+		});
+
+        var closeOverlayButton = document.getElementById('closeOverlayButton');
+        var overlay = document.getElementById('overlay');
+
+        closeOverlayButton.addEventListener('click', function () {
+            overlay.style.display = 'none';
+        });
     </script>
 }
-<h1>DisplayProduct</h1>
-<div class="container">
-    <div class="col-md-6">
-        <div class="row justify-content-center mt-5">
-            <form class="d-flex" id="productSearchForm">
-                <label for="product-search">Ürün Adı:</label>
-                <input class="form-control me-2" type="search" id="product-search" placeholder="Arama yap..." aria-label="Search">
-            </form>
-            <div class="mb-3 d-flex">
-                <label for="rangeInput">Fiyat:</label>
-                <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="rangeInput">
-            </div>
-            <div class="mb-3 d-flex">
-                <label for="brands">Markalar:</label>
-                @foreach (var brand in brandSelect)
-                {
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="@brand.Key" name="brands" value="@brand.Key">
-                        <label class="form-check-label" for="@brand.Key">@brand.Value</label>
-                    </div>
-                }
-            </div>
-            <div class="mb-3 d-flex">
-                <label for="categories">Kategoriler:</label>
-                @foreach (var category in ViewBag.CategorySelect)
-                {
-                    <div>
-                        <input type="checkbox" id="@("category_" + category.Key)" name="categories" value="@category.Key">
-                        <label for="@("category_" + category.Key)">@category.Value</label>
-                    </div>
-                }
-            </div>
-            <div class="mb-3 d-flex">
-                <label>Adet:</label>
-                <span>Adet en az</span>
-                <input type="radio" />
-                <span>Adet en çok</span>
-                <input type="radio" />
-            </div>
-            <div class="mb-3 d-flex">
-                <button type="button" class="btn btn-primary" id="listeleButton">Listele</button>
+<h1> Tüm Ürünler</h1>
+<button type="button" class="btn btn-success" id="openOverlayButton" style="position:relative; left:530px; top:-60px;">Listeleme yap</button>
+<div id="overlay">
+    <div class="container">
+        <div class="col-md-6">
+            <div class="row justify-content-center mt-5">
+                <form class="d-flex" id="productSearchForm">
+                    <label for="product-search">Ürün Adı:</label>
+                    <input class="form-control me-2" type="search" id="product-search" placeholder="Arama yap..." aria-label="Search">
+                </form>
+                <div class="mb-3 d-flex">
+                    <label for="rangeInput">Fiyat:</label>
+                    <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="rangeInput">
+                </div>
+                <div class="mb-3 d-flex">
+                    <label for="brands">Markalar:</label>
+                    @foreach (var brand in brandSelect)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="@brand.Key" name="brands" value="@brand.Key">
+                            <label class="form-check-label" for="@brand.Key">@brand.Value</label>
+                        </div>
+                    }
+                </div>
+                <div class="mb-3 d-flex">
+                    <label for="categories">Kategoriler:</label>
+                    @foreach (var category in ViewBag.CategorySelect)
+                    {
+                        <div>
+                            <input type="checkbox" id="@("category_" + category.Key)" name="categories" value="@category.Key">
+                            <label for="@("category_" + category.Key)">@category.Value</label>
+                        </div>
+                    }
+                </div>
+                <div class="mb-3 d-flex">
+                    <label>Adet:</label>
+                    <span>Adet en az</span>
+                    <input type="radio" />
+                    <span>Adet en çok</span>
+                    <input type="radio" />
+                </div>
+                <div class="mb-3 d-flex">
+                    <button type="button" class="btn btn-primary" id="listeleButton">Listele</button>
+                    <button type="button" class="btn btn-danger mx-2" id="closeOverlayButton">Cıkış</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="container">
-    @if (Model != null && Model.Any())
-    {
-        <div class="container d-flex justify-content-between" id="productListContainer">
-            @Html.Partial("_ProductListPartial", Model)
-        </div>
-    }
-    else
-    {
-        @if (Model != null && Model.Any())
-        {
-            <div class="container d-flex justify-content-between" id="productListContainer">
-                @foreach (var item in Model)
-                {
-                    <div class="card" style="width: 18rem;">
-                        @if (!String.IsNullOrEmpty(item.ImagePath))
-                        {
-                            <img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
-                        }
-                        else
-                        {
-                            <img class="card-img-top" src="/images/not-found-image.jpg" />
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title">@item.Name</h5>
-                            <p class="card-text">@item.Description</p>
-                            <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
-                            @if (!User.IsInRole("Admin"))
-                            {
-                                <a style="display:none;"class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-                                <a style="display:none;"class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-                            }
-                            else
-                            {
-                                <a  class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-                                <a  class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p>No products found.</p>
-        }
-    }
+<div class="container d-flex">
+	<div class="container">
+		@if (Model != null && Model.Any())
+		{
+			<div class="container" id="productListContainer">
+				@Html.Partial("_ProductListPartial", Model)
+			</div>
+		}
+		else
+		{
+			<div class="container">
+				<div class="row">
+					@if (Model != null && Model.Any())
+					{
+						@foreach (var item in Model)
+						{
+							<div class="col-md-4">
+								<div class="card" style="width:300px;">
+									<div class="card-header">
+										<h5 class="card-title">@TruncateString(item.Name, 20)</h5>
+									</div>
+									@if (!String.IsNullOrEmpty(item.ImagePath))
+									{
+										<img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" style="width: 300px; height: 300px;" />
+									}
+									else
+									{
+										<img class="card-img-top" src="/images/not-found-image.jpg" style="width: 300px; height: 300px;" />
+									}
+									<div class="card-body">
+										<div class="d-flex justify-content-between">
+											<div>
+												@for (int i = 0; i < item.Rating; i++)
+												{
+													<span class="star">&#9733;</span>
+												}
+											</div>
+											<div>
+												<span class="card-text"><strong id="result-price">@item.Price TL</strong></span>
+											</div>
+										</div>
+										<div class="card-footer">
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <div class="btn-group" role="group" style="position:relative; right:55px;">
+                                                    <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
+                                                    <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                                                    <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
+                                            }
+										</div>
+									</div>
+								</div>
+							</div>
+						}
+					}
+					else
+					{
+						<p>No products found.</p>
+					}
+				</div>
+			</div>
+		}
+	</div>
 </div>
 
+@functions {
+    public string TruncateString(string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
+    }
+}
 

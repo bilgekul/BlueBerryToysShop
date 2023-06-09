@@ -1,5 +1,5 @@
 ﻿﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 @{
     Dictionary<string, string> brandSelect = ViewBag.BrandSelect as Dictionary<string, string>;
@@ -45,6 +45,32 @@
 			left:330px;
 			top:-30px;
 		}
+
+		.slider {
+			margin-left:260px;
+			width: 700px;
+			height: 100px;
+			overflow: hidden;
+		}
+
+		.slider ul {
+			display: flex;
+			list-style-type: none;
+			transition: transform 0.5s;
+		}
+
+		.slider ul li {
+			margin-right: 10px;
+		}
+
+		.slider ul li img {
+			width: 80px;
+			height: 80px;
+		}
+
+		.btn-group{
+			left:200px;
+		}
 	</style>
 }
 @model List<ProductViewModel>
@@ -65,58 +91,133 @@
 			</section>
 	</article>
 </div>
-<div class="container" id="slide-bar">
-	
+<div class="container mt-3 mb-3">
+	<span style="font-weight:400;  font-size:40px;">Markalar</span>
+		<div class="slider">
+			<ul>
+			<li><a data-brand="barbie"><img src="~/images/barbie.png" alt="brand-1"></a></li>
+			<li><a data-brand="blx"><img src="~/images/blx.jpg" alt="brand-2"></a></li>
+			<li><a data-brand="crafy"><img src="~/images/crafty.png" alt="brand-3"></a></li>
+			<li><a data-brand="dollz'n more"><img src="~/images/DollznMore.png" alt="brand-4"></a></li>
+			<li><a data-brand="fisherprice"><img src="~/images/fp.png" alt="brand-5"></a></li>
+			<li><a data-brand="hasbro"><img src="~/images/hasbro.png" alt="brand-6"></a></li>
+			<li><a data-brand="hot wheels"><img src="~/images/hotwheels.png" alt="brand-7"></a></li>
+			<li><a data-brand="lego"><img src="~/images/lego.png" alt="brand-8"></a></li>
+			<li><a data-brand="play-doh"><img src="~/images/playdoh.jpg" alt="brand-9"></a></li>
+			</ul>
+		</div>
 </div>
-<div class="container" id="recomment-container">
-	<div class="container">
-		@if (Model != null && Model.Any())
+<div class="container mt-3 mb-3">
+	<span style="font-weight:400;  font-size:40px;">Kategoriler</span>
+	<div class="mt-3" role="group">
+		@foreach (var item in ViewBag.Categories)
 		{
-			<div class="container d-flex justify-content-between" id="productListContainer">
-				@Html.Partial("_ProductListPartial", Model)
-			</div>
-		}
-		else
-		{
-			@if (Model != null && Model.Any())
-			{
-				<div class="container d-flex justify-content-between" id="productListContainer">
-					@foreach (var item in Model)
-					{
-						<div class="card" style="width: 18rem;">
-							@if (!String.IsNullOrEmpty(item.ImagePath))
-							{
-								<img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
-							}
-							else
-							{
-								<img class="card-img-top" src="/images/not-found-image.jpg" />
-							}
-							<div class="card-body">
-								<h5 class="card-title">@item.Name</h5>
-								<p class="card-text">@item.Description</p>
-								<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
-								@if (!User.IsInRole("Admin"))
-								{
-									<a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-									<a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-								}
-								else
-								{
-									<a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-									<a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-								}
-							</div>
-						</div>
-					}
-				</div>
-			}
-			else
-			{
-				<p>No products found.</p>
-			}
+			<a asp-controller="Home"  asp-action="GetCategory" asp-route-categoryId="@item.Id" class="btn btn-success m-1">@item.Name</a>
 		}
 	</div>
 </div>
+<div class="container">
+		<img src="~/images/Blog-Post-29-Raising-Happy-Children-1000x423.jpg" style="border-radius:20px; position:relative; left:110px;"/>
+	<p style="font-weight:400; font-size:30px;">
+		Çocukların hayal dünyasını renklendiren ve eğlence dolu anlar yaşatan bir oyuncak dünyasına hoş geldiniz! Oyuncaklarımızla dolu bu özel site, çocukların gelişimine katkıda bulunurken aynı zamanda eğlenceli bir alışveriş deneyimi sunuyor.
 
+		Biz, çocukların mutluluğunu ve güvenliğini ön planda tutan bir oyuncak mağazasıyız. Geniş ürün yelpazemizde her yaşa ve her ilgi alanına uygun oyuncaklar bulunmaktadır. En yeni oyun setleri, yaratıcı yapım kitleri, interaktif oyuncaklar, oyuncak bebekler, araçlar ve daha fazlası burada sizleri bekliyor.
 
+		Kaliteli markaların güvencesiyle sunulan oyuncaklarımız, çocukların eğlenirken öğrenmelerini sağlayacak özelliklere sahiptir. Çocukların hayal güçlerini geliştiren, problem çözme becerilerini destekleyen ve sosyal etkileşimlerini artıran ürünler seçiyoruz. Aynı zamanda güvenlik standartlarına uygun olan oyuncaklarımızın sağlığa zararlı olabilecek herhangi bir madde içermediğinden emin olabilirsiniz.
+	</p>
+</div>
+<hr />
+<div class="container mt-5" id="recomment-container">
+	<h2>Öne Çıkan Ürünler</h2>
+	<table class="table">
+		<tbody>
+			<tr>
+				
+			
+			</tr>
+		</tbody>
+	</table>
+	<div class="container d-flex justify-content-between">
+		@if (Model != null && Model.Any())
+		{
+			@foreach (var item in Model)
+			{
+				@if (item.Rating == 3 || item.Rating == 5)
+				{
+					<div class="card" style="width:300px;">
+						<div class="card-header">
+							<h5 class="card-title">@item.Name</h5>
+						</div>
+						@if (!String.IsNullOrEmpty(item.ImagePath))
+						{
+							<img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
+						}
+						else
+						{
+							<img class="card-img-top" src="/images/not-found-image.jpg" />
+						}
+						<div class="card-body">
+							<div class="d-flex justify-content-between">
+								<div>
+									@for (int i = 0; i < item.Rating; i++)
+									{
+										<span class="star">&#9733;</span>
+									}
+								</div>
+								<div>
+									<span class="card-text"><strong id="result-price">@item.Price TL</strong></span>
+								</div>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id" style="position:relative; left:-30px;">Detaylar</a>
+							</div>
+						</div>
+					</div>
+				}
+			}
+		}
+		else
+		{
+			<p>No products found.</p>
+		}
+	</div>
+
+</div>
+@section Scripts{
+	<script type="text/javascript">
+		var slider = document.querySelector('.slider ul');
+		var sliderItems = document.querySelectorAll('.slider ul li');
+		var currentIndex = 0;
+		var slideWidth = sliderItems[0].offsetWidth;
+		var slideCount = sliderItems.length;
+
+		function nextSlide() {
+			currentIndex = (currentIndex < slideCount - 1) ? currentIndex + 1 : 0;
+			slider.style.transform = 'translateX(' + (-slideWidth * currentIndex) + 'px)';
+		}
+		setInterval(nextSlide, 3000);
+
+		var sliderItems = document.querySelectorAll('.slider ul li a');
+
+		sliderItems.forEach(function (item) {
+			item.addEventListener('click', function (event) {
+				event.preventDefault();
+				var brandName = item.getAttribute('data-brand');
+
+				var form = document.createElement('form');
+				form.setAttribute('method', 'post');
+				form.setAttribute('action', '/Home/GetBrand');
+
+				var input = document.createElement('input');
+				input.setAttribute('type', 'hidden');
+				input.setAttribute('name', 'brand');
+				input.setAttribute('value', brandName);
+
+				form.appendChild(input);
+				document.body.appendChild(form);
+
+				form.submit();
+			});
+		});
+	</script>
+}

@@ -111,20 +111,20 @@ namespace BlueBerry.ToysShop.Web.Controllers
                     {
                         var lockoutEndUtc = await _userManager.GetLockoutEndDateAsync(user);
                         var timeLeft = lockoutEndUtc.Value - DateTime.UtcNow;
-                        ModelState.AddModelError(string.Empty, $"This account has been locked out, please try again {timeLeft.Minutes} minutes later.");
+                        ModelState.AddModelError(string.Empty, $"Bu hesap kilitlendi,{timeLeft.Minutes} dakika sonra tekrar deneyin.");
                     }
                     else if (result.IsNotAllowed)
                     {
-                        ModelState.AddModelError(string.Empty, "You need to confirm your e-mail address.");
+                        ModelState.AddModelError(string.Empty, "E-posta adresinizi onaylamanız gerekiyor.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, "Invalid e-mail or password.");
+                        ModelState.AddModelError(string.Empty, "Geçersiz e-posta veya şifre.");
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid e-mail or password.");
+                    ModelState.AddModelError(string.Empty, "Geçersiz e-posta veya şifre.");
                 }
             }
             return View(viewModel);
@@ -157,7 +157,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     return Redirect(TempData["ReturnUrl"]?.ToString() ?? "/");
                 }
-                ModelState.AddModelError(string.Empty, "Verification code is invalid.");
+                ModelState.AddModelError(string.Empty, "Doğrulama kodu geçersiz.");
             }
             else if (user.TwoFactorType == Models.TwoFactorType.Email || user.TwoFactorType == Models.TwoFactorType.Sms)
             {
@@ -195,7 +195,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     if (me.PhoneNumber != viewModel.PhoneNumber && _userManager.Users.Any(a => a.PhoneNumber == viewModel.PhoneNumber))
                     {
-                        ModelState.AddModelError(string.Empty, "Phone number already in use.");
+                        ModelState.AddModelError(string.Empty, "Telefon numarası zaten kullanılıyor.");
                     }
                     else
                     {
@@ -252,7 +252,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Password is invalid.");
+                    ModelState.AddModelError(string.Empty, "Şifre geçersiz.");
                 }
             }
 
@@ -288,7 +288,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
                 }
             }
             return View(viewModel);
@@ -330,7 +330,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
                 }
             }
             return View(viewModel);

@@ -27,7 +27,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav mr-auto flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Anasayfa</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Products" asp-action="DisplayProduct">Ürünler</a>
@@ -42,37 +42,36 @@
                             var isCustomer = userRoles.Contains("Customer");
 
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="customerDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">Customer</a>
+                                <a class="nav-link dropdown-toggle text-dark"  id="customerDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">Giriş Yap</a>
                                 <ul class="dropdown-menu" aria-labelledby="customerDropdown">
-                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="CustomerLogin">Login</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="CustomerRegister">Register</a></li>
+                                    <li><a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerLogin">Login</a></li>
+                                    <li><a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerRegister">Register</a></li>
                                 </ul>
                             </li>
-
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">User</a>
-                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Login">Login</a></li>
-                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Register">Register</a></li>
-                                </ul>
-                            </li>
-
                             @if (isCustomer)
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customer" asp-action="CustomerList">My Product List</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customer" asp-action="CustomerIndex">Müşteri Bilgileri</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customer" asp-action="CustomerProfile">Profile</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customer" asp-action="CustomerLogout" asp-route-returnUrl="/Home/Index">Logout</a>
-                                </li>
+                            {   
+                                <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="customerDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Müşteri İşlemleri
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="customerDropdown">
+                                        <li>
+                                            <a class="dropdown-item text-success" asp-controller="Customer" asp-action="ViewCart">Sepetim</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerList">Listem</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerIndex">Müşteri Bilgileri</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" asp-controller="Customer" asp-action="CustomerLogout" asp-route-returnUrl="/Home/Index">Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+
                             }
                             else if (isAdmin)
                             {
@@ -80,10 +79,10 @@
                                     <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Products" asp-action="AddProduct"> Add Products</a>
+                                    <a class="nav-link text-dark" asp-controller="Products" asp-action="AddProduct">Ürün Ekle</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Categories</a>
+                                    <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Kategoriler</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Products" asp-action="DisplayProduct">Ürünler</a>
@@ -98,18 +97,10 @@
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-dark" href="#" id="customerDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">Customer</a>
+                                   data-bs-toggle="dropdown" aria-expanded="false">Giriş Yap</a>
                                 <ul class="dropdown-menu" aria-labelledby="customerDropdown">
-                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="CustomerLogin">Login</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="CustomerRegister">Register</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">User</a>
-                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Login">Login</a></li>
-                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Register">Register</a></li>
+                                    <li><a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerLogin">Login</a></li>
+                                    <li><a class="dropdown-item text-success" asp-controller="Customer" asp-action="CustomerRegister">Register</a></li>
                                 </ul>
                             </li>
                         }
@@ -127,7 +118,7 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">&copy; 2022 - BlueBerryToysShop</div>
+        <div class="container">&copy; 2023 - BlueBerryToysShop</div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

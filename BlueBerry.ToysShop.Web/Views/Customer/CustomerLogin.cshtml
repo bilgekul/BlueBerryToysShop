@@ -30,15 +30,17 @@
                     </div>
 
                     <div class="mt-2">
-                        <a asp-controller="Customer" asp-action="FacebookLogin" class="btn btn-primary">
-                            Login with
-                            Facebook
-                        </a>
-                        <a asp-controller="Customer" asp-action="GoogleLogin" class="btn btn-primary">Login with Google</a>
-                        <a asp-controller="Customer" asp-action="MicrosoftLogin" class="btn btn-primary">
-                            Login with
-                            Microsoft
-                        </a>
+                        <div class="btn-group" role="group">
+							<a asp-controller="Customer" asp-action="CustomerFacebookLogin" class="btn btn-primary">
+								Login with
+								Facebook
+							</a>
+							<a asp-controller="Customer" asp-action="CustomerGoogleLogin" class="btn btn-primary">Login with Google</a>
+							<a asp-controller="Customer" asp-action="CustomerMicrosoftLogin" class="btn btn-primary">
+								Login with
+								Microsoft
+							</a>
+                        </div>
                     </div>
 
                     <div class="mt-2">

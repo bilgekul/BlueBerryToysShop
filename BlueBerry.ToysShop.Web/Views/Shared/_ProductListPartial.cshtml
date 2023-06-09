@@ -1,39 +1,70 @@
 ﻿@model List<ProductViewModel>
 
-
-@if (Model != null && Model.Any())
-{
-    @foreach (var item in Model)
-    {
-    <div class="card" style="width: 18rem;">
-        @if (!String.IsNullOrEmpty(item.ImagePath))
+<div class="container">
+    <div class="row">
+        @if (Model != null && Model.Any())
         {
-            <img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" />
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card" style="width:300px;">
+                        <div class="card-header">
+                            <h5 class="card-title">@TruncateString(item.Name, 20)</h5>
+                        </div>
+                        @if (!String.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img class="card-img-top" src="/images/@(item.ImagePath)" alt="Card image cap" style="width: 300px; height: 300px;" />
+                        }
+                        else
+                        {
+                            <img class="card-img-top" src="/images/not-found-image.jpg" style="width: 300px; height: 300px;" />
+                        }
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    @for (int i = 0; i < item.Rating; i++)
+                                    {
+                                        <span class="star">&#9733;</span>
+                                    }
+                                </div>
+                                <div>
+                                    <span class="card-text"><strong id="result-price">@item.Price TL</strong></span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="btn-group" role="group" style="position:relative; right:55px;">
+                                    <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
+                                    <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
+                                    <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         }
         else
         {
-            <img class="card-img-top" src="/images/not-found-image.jpg" />
+            <p>No products found.</p>
         }
-        <div class="card-body">
-            <h5 class="card-title">@item.Name</h5>
-            <p class="card-text">@item.Description</p>
-            <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@item.Id">Detaylar</a>
-                @if (!User.IsInRole("Admin"))
-                {
-                    <a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-                    <a style="display:none;" class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary" asp-controller="products" asp-action="updateproduct" asp-route-productid="@item.Id">Güncelle</a>
-                    <a class="btn btn-primary" asp-controller="products" asp-action="removeproduct" asp-route-productid="@item.Id">Sil</a>
-                }
-            </div>
-        </div>
+    </div>
+</div>
+@functions {
+    public string TruncateString(string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
     }
-}
-else
-{
-    <p>No products found.</p>
 }
 

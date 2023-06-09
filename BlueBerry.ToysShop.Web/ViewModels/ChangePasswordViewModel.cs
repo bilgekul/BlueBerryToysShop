@@ -7,7 +7,7 @@ namespace BlueBerry.ToysShop.Web.ViewModels
         public string Password { get; set; } = default!;
         public string NewPassword { get; set; } = default!;
 
-        [Compare(nameof(NewPassword), ErrorMessage = "Entered passwords doesn't match.")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Girilen şifreler eşleşmiyor.")]
         public string NewPasswordConfirm { get; set; } = default!;
     }
 }

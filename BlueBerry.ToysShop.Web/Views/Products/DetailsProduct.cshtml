@@ -18,22 +18,23 @@
                         console.log(data);
                         $("#comments").empty();
                         $.each(data, function (index, item) {
-                            let comment = `<div class="card mt-3">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    <h5 class="card-title">${item.name}</h5>
-                                                    <div class="commentlist-rating" id="comment-rating-${index}" data-rating="${item.rating}">
-                                                                <div class="rateYo"></div>
+                            var rating = item.rating || 0; // Eğer item.rating tanımlı değilse veya null ise varsayılan bir puanlama değeri olan 0'ı kullanın
+
+                            var comment = `<div class="card mt-3">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between">
+                                                            <h5 class="card-title">${item.name}</h5>
+                                                            <div class="commentlist-rating" id="comment-rating-${index}" data-rating="${rating}">
+                                                                <div class="rateYo-${index}"></div>
+                                                            </div>
+                                                        </div>
+                                                        <h6 class="card-subtitle mb-2 text-muted">${item.created}</h6>
+                                                        <p class="card-text">${item.comment}</p>
                                                     </div>
-                                                </div>
-                                                <h6 class="card-subtitle mb-2 text-muted">${item.created}</h6>
-                                                <p class="card-text">${item.comment}</p>
-                                            </div>
-                                        </div>`;
+                                                </div>`;
                             $("#comments").append(comment);
 
-                            var rating = item.rating;
-                            $("#comment-rating-" + index).rateYo({
+                            $(".rateYo-" + index).rateYo({
                                 rating: rating,
                                 readOnly: true,
                                 starWidth: "20px"
@@ -45,6 +46,7 @@
                     }
                 });
             }
+
             function saveComment(productId) {
                 var name = $("#Name").val();
                 var comment = $("#Comment").val();
@@ -66,9 +68,9 @@
                             if (data.IsSuccess) {
                                 alert("Yorum kaydedildi");
                                 $("#Comment").val("");
-                                $("#comment-rating").rateYo("rating", 0); 
-                                loadComments(productId); 
-                                updateGeneralRating(productId); 
+                                $(".rateYo").rateYo("rating", 0);
+                                loadComments(productId);
+                                updateGeneralRating(productId);
                             } else {
                                 alert(data.Message);
                             }
@@ -110,36 +112,63 @@
     </aside>
     <section class="mx-5 col-md-4">
         <header>
-            <h1 class="display-1">@(Model.Name)</h1>
-            <h2 class="display-4">@(Model.CategoryName)/Kategori ismi</h2>
+            <section>
+                <span style="color:orange; font-size:30px;">Ürün ismi</span>
+				<h1 class="display-4">@(Model.Name)</h1>
+            </section>
+            <section>
+                <span style="color:orange; font-size:30px;">Ürün kategorisi</span>
+				<h2 class="display-4">@(Model.CategoryName)</h2>
+            </section>
+           
         </header>
         <section>
-            <article>
-                @(Model.Description)
-            </article>
+            <div>
+				<span style="color:cornflowerblue; font-size:30px;">
+					Ürün fiyatı
+				</span>
+                <span style="font-size:30px;">@(Model.Price) TL</span>
+            </div>
+            
+            <span style="color:lightseagreen; font-size:30px;">Ürün açıklaması</span>
+            <details>
+				<article style="color:peachpuff">
+					@(Model.Description)
+				</article>
+            </details> 
         </section>
-        <main class="container d-flex justify-content-between">
+        <main class="container d-flex">
             @if (User.IsInRole("Customer"))
             {
                 <div>
                     <form method="post" asp-controller="Customer" asp-action="AddToList">
                         <input type="hidden" name="productId" value="@Model.Id" />
-                        <button type="submit" class="btn btn-primary">Listeye Ekle</button>
+                        <button type="submit" class="btn btn-success">Liste</button>
                     </form>
                 </div>
             }
             @if (User.IsInRole("Customer"))
             {
-                 <div>
-                <form method="post" asp-controller="Customer" asp-action="AddToCart">
-                    <input type="hidden" name="productId" value="@Model.Id" />
-                    <button type="submit" class="btn btn-primary">Sepete Ekle</button>
-                </form>
-            </div>
+                <div class="container d-flex" style="position:relative; left:50px;">
+                    <form method="post" asp-controller="Customer" asp-action="AddToCart">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-info">Sepet</button>
+                        <input type="number" name="quantity" value="0" min="1"  style="width:50px;"/>
+                    </form>
+                </div>
+
+
             }
-            <div>
-               Satın Al
-            </div>
+            @if (User.IsInRole("Customer"))
+            {
+                <div style="position:relative; left:50px;">
+                    <form method="post" asp-controller="Customer" asp-action="Checkout">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger">Satın</button>
+                    </form>
+                </div>    
+            }
+            
         </main>
     </section>
 </div>
@@ -147,32 +176,40 @@
 <div class="container mt-5">
     <aside class="row">
         <section class="col-md-4">
-            <span>
-                Yayınlanma Tarihi: @(Model.PublishDate)
-            </span>
-            <br />
-            <span>
-                Stokta Kalan Adet: @(Model.Quantity)
-            </span>
+            <div>
+                <span style="color:orange; font-size:30px;">
+					Yayınlanma Tarihi:
+				</span>
+                <span style="font-size:30px;">
+                    @ShortDateTime(Model.PublishDate)
+                </span>
+            </div>
+           <div>
+                <span style="color:orange; font-size:30px;">
+					Stokta Kalan Adet: 
+				</span>
+                <span style="font-size:30px">
+					@(Model.Quantity)
+                </span>
+           </div>
         </section>
         <section class="col-md-4">
             <div class="container">
-                <label for="general-rating">Genel puan:</label>
+                <label for="general-rating" style="color:orange; font-size:30px;">Genel puan:</label>
                 <div id="general-rating"></div>
             </div>
         </section>
     </aside>
 </div>
-
-<div class="mb-5">
+<div class=" mt-5 mb-5">
     <div class="pb-3">
-        <h3>Yorumlar</h3>
+        <h3 style="font-size:30px;">Yorumlar</h3>
         @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
         {
             <label for="Name" class="form-label">Kullanıcı:</label>
             <input class="form-control" id="Name" name="Name" value="@User.Identity.Name" readonly>
         }
-        <label for="rating">Puan ver:</label>
+        <label for="rating" style="font-size:20px;">Puan ver:</label>
         <div>
             <div class="rateYo" id="comment-rating"></div>
         </div>
@@ -193,5 +230,16 @@
     <div id="comments" data-product-id="@Model.Id">
     </div>
 </div>
+@functions{
+    public string ShortDateTime(DateTime? time)
+    {
+        if (time.HasValue)
+        {
+            var shortTime = time.Value.ToShortDateString();
+            return shortTime;
+        }
 
+        return string.Empty;
+    }
+}
 

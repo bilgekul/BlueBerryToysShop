@@ -79,7 +79,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Role not found.");
+                ModelState.AddModelError(string.Empty, "Rol bulunamadı.");
             }
             return RedirectToAction("Roles");
         }
@@ -121,7 +121,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     if (user.PhoneNumber != viewModel.PhoneNumber && _userManager.Users.Any(a => a.PhoneNumber == viewModel.PhoneNumber))
                     {
-                        ModelState.AddModelError(string.Empty, "Phone number already in use.");
+                        ModelState.AddModelError(string.Empty, "Bu telefon numarası önceden kullanılmış.");
                     }
                     else
                     {
@@ -166,7 +166,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
                 }
             }
 

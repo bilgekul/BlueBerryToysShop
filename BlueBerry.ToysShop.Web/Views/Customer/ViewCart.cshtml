@@ -1,0 +1,59 @@
+﻿
+@{
+    ViewData["Title"] = "ViewCart";
+}
+@model List<CartItem>
+
+<div class="container">
+    <h1>Sepet</h1>
+    @if (Model != null && Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Ürün Adı</th>
+                    <th>Fiyat</th>
+                    <th>Miktar</th>
+                    <th>Toplam Fiyat</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@(item.Product != null ? item.Product.Name : "Ürün Bulunamadı")</td>
+                        <td>@(item.Product != null ? item.Product.Price + " TL" : "-")</td>
+                        <td>
+                            <form asp-controller="Customer" asp-action="UpdateCartItem" method="post">
+                                <input type="hidden" name="cartItemId" value="@item.Id" />
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="quantity" value="@item.Quantity" min="1" />
+                                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                                </div>
+                            </form>
+                        </td>
+                        <td>@(item.Product != null ? (item.Product.Price * item.Quantity) + " TL" : "-")</td>
+                        <td>
+                            <form asp-controller="Customer" asp-action="RemoveFromCart" method="post">
+                                <input type="hidden" name="cartItemId" value="@item.Id" />
+                                <button type="submit" class="btn btn-danger">Sepetten Kaldır</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="text-end">
+            <h5>Toplam Fiyat: <strong>@(Model.Sum(item => item.Product != null ? (item.Product.Price * item.Quantity) : 0)) TL</strong></h5>
+        </div>
+        <div class="text-end">
+            <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">Ödeme Yap</a>
+        </div>
+    }
+    else
+    {
+        <p>Sepetinizde henüz ürün bulunmamaktadır.</p>
+    }
+</div>
+

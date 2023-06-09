@@ -4,7 +4,7 @@
     ViewData["Title"] = "CustomerList";
 }
 
-<h1>CustomerList</h1>
+<h1>Benim Listem</h1>
 
 @if (Model == null)
 {
@@ -20,9 +20,24 @@ else
                     <img src="@(string.IsNullOrEmpty(listItem.Product?.ImagePath) ? "/images/noimage.jpg" : "/images/" + listItem.Product.ImagePath)" class="card-img-top" alt="@listItem.Product.Name">
                     <div class="card-body">
                         <h5 class="card-title">@listItem.Product.Name</h5>
-                        <p class="card-text">@listItem.Product.Description</p>
-                        <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@listItem.Product.Id">Detaylar</a>
-                        <a href="#" class="btn btn-primary">Satın Al</a>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                @for (int i = 0; i < listItem.Product.Rating; i++)
+                                {
+                                    <span class="star">&#9733;</span>
+                                }
+                            </div>
+                            <div>
+                                <span class="card-text"><strong id="result-price">@listItem.Product.Price TL</strong></span>
+                            </div>
+                        </div>
+                         <div class="card-footer">
+                            <div class="btn-group" role="group" style="position:relative;">
+								<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@listItem.Product.Id">Detaylar</a>
+                                <a class="btn btn-primary" asp-controller="customer" asp-action="removefromlist" asp-route-productid="@listItem.Product.Id">Kaldır</a>
+								<a class="btn btn-primary">Satın Al</a>
+                            </div>
+                         </div>
                     </div>
                 </div>
             </div>

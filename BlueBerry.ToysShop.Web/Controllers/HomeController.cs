@@ -35,27 +35,9 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 PublishDate = x.PublishDate
             }).ToList();
 
-            ViewBag.BrandSelect = new Dictionary<string, string>
-            {
-                { "Lego", "Lego" },
-                { "FisherPrice", "FisherPrice" },
-                { "Barbie", "Barbie" },
-                { "Hot Wheels", "Hot Wheels" },
-                { "Crafy", "Crafy" },
-                { "Dollz'n More", "Dollz'n More" },
-                { "BLX", "BLX" },
-                { "Play-Doh", "Play-Doh" },
-                { "Hasbro", "Hasbro" }
-            };
-            var categories = _context.Category?.ToList() ?? new List<Category>();
-            var categorySelect = new Dictionary<int, string>();
-            foreach (var category in categories)
-            {
-                categorySelect.Add(category.Id, category.Name);
-            }
-
-            ViewBag.categorySelect = categorySelect;
-            return View(products);
+			var categories = _context.Category.ToList();
+			ViewBag.Categories = categories;
+			return View(products);
         }
         [HttpGet]
         public IActionResult Result()
@@ -63,18 +45,62 @@ namespace BlueBerry.ToysShop.Web.Controllers
             return View();  
         }
         [HttpPost]
-        public IActionResult Result(string searchproduct)
+        public IActionResult Result([FromForm]string searchproduct)
         {
             if (!string.IsNullOrEmpty(searchproduct))
             {
-                var product = _context.Products.Where(x => x.Name.Contains(searchproduct)).Select(x => new ProductViewModel(){Name = x.Name, Id = x.Id, ImagePath = x.ImagePath, Price = x.Price}).ToList();
+                var product = _context.Products.Where(x => x.Name.Contains(searchproduct)).Select(x => new ProductViewModel(){Name = x.Name, Id = x.Id, ImagePath = x.ImagePath, Price = x.Price, Rating = x.Rating}).ToList();
                  
                 return View(product); 
             }
 
-            return Json("Hata");
+            return View();
         }
-        public IActionResult Privacy()
+		[HttpGet]
+		public IActionResult GetBrand()
+		{
+			return View();
+		}
+
+		[HttpPost]
+		public IActionResult GetBrand(string brand)
+		{
+			if (!string.IsNullOrEmpty(brand))
+			{
+				var product = _context.Products.Where(x => x.Brand.Contains(brand)).Select(x => new ProductViewModel()
+				{
+					Name = x.Name,
+					Id = x.Id,
+					ImagePath = x.ImagePath,
+					Price = x.Price,
+					Rating = x.Rating
+				}).ToList();
+
+				if (product.Count > 0)
+				{
+					return View(product);
+				}
+			}
+
+			return View();
+		}
+
+		[HttpGet]
+		public IActionResult GetCategory(int categoryId)
+		{
+				var products = _context.Products.Where(p => p.CategoryId == categoryId)
+					.Select(p => new ProductViewModel()
+					{
+						Name = p.Name,
+						Id = p.Id,
+						ImagePath = p.ImagePath,
+						Price = p.Price,
+						Rating = p.Rating,
+					}).ToList();
+
+				return View(products);
+		}
+		public IActionResult Privacy()
         {
             return View();
         }

@@ -32,80 +32,166 @@ namespace BlueBerry.ToysShop.Web.Controllers
             _mapper = mapper;
             _context = context;
         }
-        public IActionResult ClearCart()
-        {
-            return RedirectToAction("Cart");
-        }
-
-        public IActionResult Checkout()
-        {
-            
-
-            return RedirectToAction("PaymentSuccess");
-        }
-
-        public IActionResult PaymentSuccess()
-        {
-            return View();
-        }
         [HttpPost]
-           public IActionResult AddToCart(int productId)
-        { 
+        public IActionResult UpdateCartItem(int cartItemId, int quantity)
+        {
             if (User.IsInRole("Customer"))
             {
                 var username = User.Identity.Name;
                 var user = _context.Users.FirstOrDefault(u => u.UserName == username);
-                if(user != null)
+                if (user != null)
                 {
-                     var cart = _context.Carts.FirstOrDefault(c => c.UserName == username);
-                     if (cart != null)
-                                    {
-                                        var existingCartItem = _context.CartItems.FirstOrDefault(ci => ci.CartId == cart.Id && ci.ProductId == productId);
-                                        if (existingCartItem != null)
-                                        {
-                                            existingCartItem.Quantity++;
-                                        }
-                                        else
-                                        {
-                                            var newCartItem = new CartItem
-                                            {
-                                                CartId = cart.Id,
-                                                ProductId = productId,
-                                                Quantity = 1
-                                            };
-
-                                            _context.CartItems.Add(newCartItem);
-                                        }
-
-                                        _context.SaveChanges();
-                                    }
-                                     else
-                                    {
-                                        var newCart = new Cart
-                                        {
-                                            UserName = username
-                                        };
-
-                                        _context.Carts.Add(newCart);
-
-                                        var newCartItem = new CartItem
-                                        {
-                                            CartId = newCart.Id,
-                                            ProductId = productId,
-                                            Quantity = 1
-                                        };
-
-                                        _context.CartItems.Add(newCartItem);
-
-                                        _context.SaveChanges();
-                                    }
+                    var cartItem = _context.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+                    if (cartItem != null)
+                    {
+                        if (quantity > 0)
+                        {
+                            cartItem.Quantity = quantity;
+                            _context.SaveChanges();
+                            TempData["status"] = "Ürün miktarı güncellendi.";
+                        }
+                        else
+                        {
+                            _context.CartItems.Remove(cartItem);
+                            _context.SaveChanges();
+                            TempData["status"] = "Ürün sepetinizden kaldırıldı.";
+                        }
+                        return RedirectToAction("ViewCart");
+                    }
                 }
-                
+            }
 
-                return RedirectToAction("Cart");
+            return Json(new { IsSuccess = false, Message = "Ürün miktarını güncellemek için giriş yapmanız gerekmektedir." });
+        }
+
+        public IActionResult ViewCart()
+        {
+            if (User.IsInRole("Customer"))
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+
+                if (user != null)
+                {
+                    var cart = _context.Carts.Include(c => c.CartItems).FirstOrDefault(c => c.UserName == username);
+
+                    if (cart != null)
+                    {
+                        var cartItems = _context.CartItems.Include(ci => ci.Product).Where(ci => ci.CartId == cart.Id).ToList();
+                        return View(cartItems);
+                    }
+                }
+            }
+
+            return View(new List<CartItem>());
+        }
+
+        [HttpGet]
+        public IActionResult Cart()
+        {
+            return View();  
+        }
+        [HttpPost]
+        public IActionResult AddToCart(int productId, int quantity)
+        {
+            if (User.IsInRole("Customer"))
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+
+                if (user != null)
+                {
+                    var cart = _context.Carts.Include(c => c.CartItems).FirstOrDefault(c => c.UserName == username);
+
+                    if (cart != null)
+                    {
+                        var existingCartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+
+                        if (existingCartItem != null)
+                        {
+                            existingCartItem.Quantity += quantity;
+                        }
+                        else
+                        {
+                            var newCartItem = new CartItem
+                            {
+                                CartId = cart.Id,
+                                ProductId = productId,
+                                Quantity = quantity
+                            };
+
+                            cart.CartItems.Add(newCartItem);
+                        }
+                    }
+                    else
+                    {
+                        var newCart = new Cart
+                        {
+                            UserName = username
+                        };
+
+                        _context.Carts.Add(newCart);
+
+                        var newCartItem = new CartItem
+                        {
+                            CartId = newCart.Id,
+                            ProductId = productId,
+                            Quantity = quantity
+                        };
+
+                        newCart.CartItems.Add(newCartItem);
+                    }
+
+                    _context.SaveChanges();
+
+                    var cartItems = _context.CartItems
+                        .Include(ci => ci.Product)
+                        .Where(ci => ci.Cart.UserName == username)
+                        .ToList();
+
+                    return View("Cart", cartItems);
+                }
             }
 
             return Json(new { IsSuccess = false, Message = "Ürünü sepete eklemek için giriş yapmanız gerekmektedir." });
+        }
+        [HttpPost]
+        public IActionResult RemoveFromCart(int cartItemId)
+        {
+            if (User.IsInRole("Customer"))
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+
+                if (user != null)
+                {
+                    var cartItem = _context.CartItems.FirstOrDefault(ci => ci.Id == cartItemId && ci.Cart.UserName == username);
+
+                    if (cartItem != null)
+                    {
+                        if (cartItem.Quantity > 1)
+                        {
+                            cartItem.Quantity--;
+                        }
+                        else
+                        {
+                            _context.CartItems.Remove(cartItem);
+                        }
+
+                        _context.SaveChanges();
+                        TempData["status"] = "Ürün sepetinizden kaldırıldı.";
+
+                        var cartItems = _context.CartItems
+                            .Include(ci => ci.Product)
+                            .Where(ci => ci.Cart.UserName == username)
+                            .ToList();
+
+                        return View("Cart", cartItems);
+                    }
+                }
+            }
+
+            return Json(new { IsSuccess = false, Message = "Ürünü sepetinizden kaldırmak için giriş yapmanız gerekmektedir." });
         }
 
         [HttpGet]
@@ -118,7 +204,33 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 .FirstOrDefault(pl => pl.UserName == username);
             return View(productList);
         }
-        [HttpPost]
+		public IActionResult RemoveFromList(int productId)
+		{
+			if (User.IsInRole("Customer"))
+			{
+				var username = User.Identity.Name;
+				var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+				if (user != null)
+				{
+					var productList = _context.ProductLists.FirstOrDefault(pl => pl.UserName == username);
+					if (productList != null)
+					{
+						var listItem = _context.ListItems.FirstOrDefault(li => li.ProductId == productId && li.ListId == productList.Id);
+						if (listItem != null)
+						{
+							_context.ListItems.Remove(listItem);
+							_context.SaveChanges();
+							TempData["status"] = "Ürün listenizden kaldırıldı.";
+							return RedirectToAction("Ürün", "Detaylar", new { id = productId });
+						}
+					}
+				}
+			}
+			return Json(new { IsSuccess = false, Message = "Ürünü listenizden kaldırmak için giriş yapmanız gerekmektedir." });
+		}
+
+
+		[HttpPost]
         public IActionResult AddToList(int productId)
         {
             if (User.IsInRole("Customer"))
@@ -317,7 +429,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                         {
                             return Redirect(returnUrl.ToString() ?? "/");
                         }
-                        return RedirectToAction("CustomerIndex", "Customer");
+                        return RedirectToAction("Index", "Home");
                     }
                     else if (result.RequiresTwoFactor)
                     {
@@ -327,20 +439,20 @@ namespace BlueBerry.ToysShop.Web.Controllers
                     {
                         var lockoutEndUtc = await _userManager.GetLockoutEndDateAsync(user);
                         var timeLeft = lockoutEndUtc.Value - DateTime.UtcNow;
-                        ModelState.AddModelError(string.Empty, $"This account has been locked out, please try again {timeLeft.Minutes} minutes later.");
+                        ModelState.AddModelError(string.Empty, $"Bu hesap kilitlendi, {timeLeft.Minutes} dakika sonra tekrar deneyin..");
                     }
                     else if (result.IsNotAllowed)
                     {
-                        ModelState.AddModelError(string.Empty, "You need to confirm your e-mail address.");
+                        ModelState.AddModelError(string.Empty, "E-posta adresinizi onaylamanız gerekiyor.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, "Invalid e-mail or password.");
+                        ModelState.AddModelError(string.Empty, "Geçersiz e-posta veya şifre.");
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid e-mail or password.");
+                    ModelState.AddModelError(string.Empty, "Geçersiz e-posta veya şifre.");
                 }
             }
             return View(viewModel);
@@ -373,7 +485,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     return Redirect(TempData["ReturnUrl"]?.ToString() ?? "/");
                 }
-                ModelState.AddModelError(string.Empty, "Verification code is invalid.");
+                ModelState.AddModelError(string.Empty, "Doğrulama kodu geçersiz.");
             }
             else if (user.TwoFactorType == Models.TwoFactorType.Email || user.TwoFactorType == Models.TwoFactorType.Sms)
             {
@@ -411,7 +523,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 {
                     if (me.PhoneNumber != viewModel.PhoneNumber && _userManager.Users.Any(a => a.PhoneNumber == viewModel.PhoneNumber))
                     {
-                        ModelState.AddModelError(string.Empty, "Phone number already in use.");
+                        ModelState.AddModelError(string.Empty, "Telefon numarası zaten kullanılıyor.");
                     }
                     else
                     {
@@ -468,7 +580,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Password is invalid.");
+                    ModelState.AddModelError(string.Empty, "Şifre geçersiz.");
                 }
             }
 
@@ -504,7 +616,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
                 }
             }
             return View(viewModel);
@@ -546,7 +658,7 @@ namespace BlueBerry.ToysShop.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Kullanıcı bulunamadı.");
                 }
             }
             return View(viewModel);

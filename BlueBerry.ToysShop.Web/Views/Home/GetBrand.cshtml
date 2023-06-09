@@ -1,13 +1,14 @@
 ﻿
 @{
-    ViewData["Title"] = "Result";
+    ViewData["Title"] = "GetBrand";
 }
+
+<h1>Markanın Ürünleri</h1>
 @model List<ProductViewModel>
-<h1>Arama Sonuçları</h1>
 @{
     <style>
-        #result-price{
-            font-size:20px;
+        #result-price {
+            font-size: 20px;
         }
     </style>
 }
@@ -19,7 +20,7 @@
             <li>
                 <div class="card" style="width:300px;">
                     <div class="card-header">
-						<h5 class="card-title">@product.Name</h5>
+                        <h5 class="card-title">@product.Name</h5>
                     </div>
                     @if (!String.IsNullOrEmpty(product.ImagePath))
                     {
@@ -32,17 +33,17 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-								@for (int i = 0; i < product.Rating; i++)
-								{
-									<span class="star">&#9733;</span>
-								}
+                                @for (int i = 0; i < product.Rating; i++)
+                                {
+                                    <span class="star">&#9733;</span>
+                                }
                             </div>
                             <div>
-								<span class="card-text"><strong id="result-price">@product.Price TL</strong></span>
-                            </div> 
+                                <span class="card-text"><strong id="result-price">@product.Price TL</strong></span>
+                            </div>
                         </div>
                         <div class="card-footer">
-							<a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@product.Id" style="position:relative; left:-30px;">Detaylar</a>
+                            <a class="btn btn-primary" asp-controller="products" asp-action="detailsproduct" asp-route-productid="@product.Id" style="position:relative; left:-30px;">Detaylar</a>
                         </div>
                     </div>
                 </div>

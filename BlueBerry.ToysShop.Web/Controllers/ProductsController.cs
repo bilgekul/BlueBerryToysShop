@@ -423,8 +423,10 @@ namespace BlueBerry.ToysShop.Web.Controllers
         [HttpGet]
         [Route("Detaylar/Ürün/{productid}")]
         public IActionResult DetailsProduct(int productid) {
-            var product = _context.Products.Find(productid);
-            return View(_mapper.Map<ProductViewModel>(product)); 
+            var product = _context.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == productid);
+            var model = _mapper.Map<ProductViewModel>(product);
+            model.CategoryName = product.Category.Name;
+            return View(_mapper.Map<ProductViewModel>(model)); 
         }
     }
 }
